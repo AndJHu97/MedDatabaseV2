@@ -1,0 +1,12 @@
+{% extends "main/base.html" %}
+{% load static %}
+{%block js_files %}
+    <script src="{%static 'main/home.js' %}"></script>
+{%endblock js_files%}
+
+{%block content%}
+    {%for disease in diseases%}
+        <h1>{{disease.disease}}</h1>
+        <p>Diagnosis of {{disease.diagnosis}}</p>
+    {%endfor%}
+{%endblock content%}

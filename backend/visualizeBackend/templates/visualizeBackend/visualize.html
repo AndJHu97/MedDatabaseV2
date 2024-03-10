@@ -1,0 +1,47 @@
+{% load static %}
+<!DOCTYPE html>
+<html>
+<head>
+    
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jstree/3.3.16/jstree.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jstree/3.3.16/themes/default/style.min.css">
+    <script src="{%static 'visualizeBackend/visualize.js' %}"></script>
+</head>
+<body>
+    <div id="jstree">
+        <ul>
+            {% for disease, disease_algorithms in disease_algorithm_list %}
+            <li id="{{ disease.id }}">{{ disease.Name }}
+                <ul>
+                    <li>Algorithms
+                        <ul>
+                            {% for algorithm in disease_algorithms %}
+                            {% if algorithm.Trigger == "First" %}
+                            <li id="{{ algorithm.id }}">{{ algorithm.Name }}
+                                <ul>
+                                    {% for next_step in algorithm.NextSteps.all %}
+                                    <li class = "generate-text" data-name="{{ next_step.ConditionsForNextStep }}">{{ next_step.ConditionsForNextStep }}</li>
+                                    {% endfor %}
+                                </ul>
+                            </li>
+                            {% endif %}
+                            {% endfor %}
+                        </ul>
+                    </li>
+                </ul>
+            </li>
+            {% endfor %}
+        </ul>
+    </div>
+    <br>
+    <br>
+    <div id="document-content"></div> <!-- Add a div to display document content -->
+    <script>
+       $(function () {
+    // Initialize jsTree
+    $('#jstree').jstree();
+});
+    </script>
+</body>
+</html>
