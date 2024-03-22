@@ -3,6 +3,5 @@ from . import views
 
 
 urlpatterns = [
-    path('<str:dfk>/', views.getSelectiveDiseaseAlgorithmData),
-    path('add/', views.addItem)
+    path('algorithms/', views.getDiseaseAndAlgorithmData, name = "DiseaseAlgorithm")
 ]

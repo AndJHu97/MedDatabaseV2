@@ -4,13 +4,17 @@ Installing REST
 
     python -m venv MedData
 
-2. Install REST and django
+2. Install REACT, REST, Axios, cors-headers and django
 
     pip install djangorestframework
     pip install django
+    npm install axios
+    pip install django-cors-headers (to allow access from React or else it limits permission)
+
+
 
 4. Activate the virtual environment
 
     MedData/Scripts/activate
 
-5. Pull it from github i assume, idk
+5. Make sure to select the corret python interpreter to venv
