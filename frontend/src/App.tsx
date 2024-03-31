@@ -1,11 +1,8 @@
-import React from 'react';
+import React from "react";
 import * as ReactDOM from "react-dom/client";
-import {
-  createBrowserRouter,
-  RouterProvider,
-} from "react-router-dom";
-import VisualizeBackend from './Pages/VisualizeBackend';
-import Main from './Pages/Main';
+import { createBrowserRouter, RouterProvider } from "react-router-dom";
+import VisualizeBackend from "./Pages/VisualizeBackend";
+import Main from "./Pages/Main";
 
 const router = createBrowserRouter([
   {
@@ -14,16 +11,13 @@ const router = createBrowserRouter([
   },
 
   {
-    path: "visualizeBackend",
-    element: <VisualizeBackend />
-  }
+    path: "/visualizeBackend",
+    element: <VisualizeBackend />,
+  },
 ]);
 
-
 const App: React.FC = () => {
-  return (
-    <RouterProvider router = {router} />
-  );
+  return <RouterProvider router={router} />;
 };
 
 export default App;
