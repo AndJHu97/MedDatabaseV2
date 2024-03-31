@@ -17,10 +17,11 @@ def getDiseaseAndAlgorithmData(request):
         return Response(data)
     elif request.method == 'POST':
          # Perform some logic with the symptoms data
-        # For example, you could process the symptoms and return additional questions
+        # Placeholder
         additional_questions = ['Do you have a fever?', 'Are you experiencing coughing or shortness of breath?']
         return Response({'additional_questions': additional_questions})
 
+#archive
 @api_view(['GET'])
 def getSelectiveDiseaseAlgorithmData(request, dfk):
     diseaseAlgorithm = DiseaseAlgorithm.objects.filter(Disease = dfk)

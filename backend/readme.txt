@@ -10,6 +10,8 @@ Installing REST
     pip install django
     npm install axios
     pip install django-cors-headers (to allow access from React or else it limits permission)
+    npm install react-router-dom localforage match-sorter sort-by
+    npm i --save react-d3-tree
 
 
 

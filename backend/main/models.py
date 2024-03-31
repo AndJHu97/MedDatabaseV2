@@ -8,6 +8,18 @@ class Symptoms(models.Model):
     Notes = models.TextField(null=True, blank = True)
     ExamType = models.ForeignKey('ExamType', on_delete=models.CASCADE, null=True, blank = True)
 
+class TriggerChecklistItem(models.Model):
+    Name = models.CharField(max_length=255, null=True)
+    Group = models.CharField(max_length = 2)
+    SymptomTrigger = models.ForeignKey('Symptoms', on_delete=models.CASCADE, null=True, blank = True)
+    #Type of selection like all or nothing or need 3/5 of the symptoms or cannot be these
+    SelectionType = models.ForeignKey('SelectionType', on_delete=models.CASCADE, null=True, blank = True)
+    SelectionAdditionalInfo = models.CharField(max_length=255, null=True)
+
+class SelectionType(models.Model):
+    Name = models.CharField(max_length=255, null=True)
+
+
 class NextStep(models.Model):
     #Name of the next 
     NextStepName = models.TextField(null = True)
@@ -25,8 +37,8 @@ class NextStep(models.Model):
     NextStepDiseaseDiagnosis = models.ForeignKey('Disease', on_delete=models.CASCADE, null=True, blank = True)
     #condition for the next step
     ConditionsForNextStep = models.TextField(null = True, blank = True)
-    NumberConditionsForNextStep = models.CharField(max_length=255, null=True, blank = True)
     #For the number condition
+    NumberConditionsForNextStep = models.CharField(max_length=255, null=True, blank = True)
     OperatorConditionForNumber = models.CharField(max_length=255, null=True, blank = True)
     Symptom = models.ForeignKey('Symptoms', on_delete=models.CASCADE, null=True, blank = True)
     ExamType = models.ForeignKey('ExamType', on_delete=models.CASCADE, null=True)
@@ -37,7 +49,7 @@ class DiseaseAlgorithm(models.Model):
     Disease = models.ForeignKey('Disease', on_delete=models.CASCADE, null=True)
     DiseaseName = models.CharField(max_length=255, null=True)
     Notes = models.TextField(null=True)
-    Trigger = models.CharField(max_length=255, null=True)
+    Triggers = models.ManyToManyField(TriggerChecklistItem, related_name='disease_algorithms')
     NextSteps = models.ManyToManyField(NextStep, related_name = "disease_algorithm")
     ExamType = models.ForeignKey('ExamType', on_delete=models.CASCADE, null=True)
 
