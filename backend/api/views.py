@@ -6,6 +6,7 @@ from .serializers import DiseaseSerializer, DiseaseAlgorithmSerializer, NextStep
 from django.views.decorators.csrf import csrf_exempt
 import json
 
+#api/algorithms
 @api_view(['GET', 'POST'])
 def getDiseaseAndAlgorithmData(request):
     if request.method == 'GET':
@@ -22,41 +23,49 @@ def getDiseaseAndAlgorithmData(request):
             for algorithm in algorithms:
                 nextSteps = algorithm.NextSteps.all()
                 algorithm_data = DiseaseAlgorithmSerializer(algorithm).data
+                #make it a child of the algorithm_data
                 algorithm_data['NextSteps'] = NextStepsSerializer(nextSteps, many=True).data
                 #Append this algorithm
                 disease_data['algorithms'].append(algorithm_data)
             #add to the disease in the algorithm section
             data.append(disease_data)
-        return Response(data)
+        return Response(data) 
     elif request.method == 'POST':
         diseaseAlgorithmInputSerializer = DiseaseAlgorithmSerializer(data = request.data)
-
         #check if valid
         if diseaseAlgorithmInputSerializer.is_valid():
             #Save and can manipulate this if want to
             newDiseaseAlgorithm = diseaseAlgorithmInputSerializer.save()
-
             # Optionally, return the serialized data of the newly created instance
             return Response(diseaseAlgorithmInputSerializer.data, status=201)
         else:
             #if invalid data: error
             return Response(diseaseAlgorithmInputSerializer.errors, status = 400)
-        
+
+#get medical user input of symptoms
 @api_view(['POST'])
 def inputSymptoms(request):
     if request.method == 'POST':
         #Get symptom name from the request
         request_data = json.loads(request.body)
-        symptom_name = request_data.get('Name', None)
-    #Check if not none
-    if symptom_name:
-        #Reverse search the Trigger Checklist Items with symptom
-        symptom_triggers = TriggerChecklistItem.object.filter(SymptomTrigger = symptom_triggers)
+        #Get the parameter name for Name
+        symptom_ID = request_data.get('ID', None)
 
-        #Reverse search the algorithms. NEED TO ADD THE OTHER WORKUP, ASSESSMENT, ETC
+        if 'symptom' not in request.session:
+            request.session['symptoms'] = []
+    #Check if not none
+    if symptom_ID:
+        #Add to session variable
+        request.session['symptoms'].append(symptom_ID)
+        #Reverse search the Trigger Checklist Items with symptom name
+        symptom_triggers = TriggerChecklistItem.object.filter(SymptomTrigger = symptom_ID)
+
+        #Reverse search the algorithms with triggers that have the symptom_trigger. NEED TO ADD THE OTHER WORKUP, ASSESSMENT, ETC
         algorithm_trigger = DiseaseAlgorithm.object.filter(Triggers__isnull = False, Triggers = symptom_triggers)
 
         #To-do: Add function to go through the triggers and check if activates those triggers 
+        #Notes: Go through the symptom_trigger and see if there's enough 
+        #Use session variables 
 
     return JsonResponse({'error': 'Only POST requests are allowed'}, status=405)
 #archive

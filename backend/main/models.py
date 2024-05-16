@@ -8,6 +8,7 @@ class Symptoms(models.Model):
     Notes = models.TextField(null=True, blank = True)
     ExamType = models.ForeignKey('ExamType', on_delete=models.CASCADE, null=True, blank = True)
 
+#Which symptoms needed to trigger workup, etc.
 class TriggerChecklistItem(models.Model):
     Name = models.CharField(max_length=255, null=True)
     Group = models.CharField(max_length = 2)

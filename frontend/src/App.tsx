@@ -10,7 +10,7 @@ import Main from './Pages/Main';
 const router = createBrowserRouter([
   {
     path: "/",
-    element: <Main />,
+    element: <Main />,  
   },
 
   {
