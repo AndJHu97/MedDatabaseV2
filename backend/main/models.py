@@ -2,7 +2,6 @@ from django.db import models
 
 #accidentally defined primary key as ID rather than using default id
 class Symptoms(models.Model):
-    ID = models.AutoField(primary_key = True)
     Name = models.CharField(max_length=255, null=True)
     Number = models.CharField(max_length=255, null=True, blank = True)
     Notes = models.TextField(null=True, blank = True)
@@ -45,24 +44,21 @@ class NextStep(models.Model):
     ExamType = models.ForeignKey('ExamType', on_delete=models.CASCADE, null=True)
 
 class DiseaseAlgorithm(models.Model):
-    ID = models.AutoField(primary_key=True)
-    Name = models.CharField(max_length=255, null=True)
-    Disease = models.ForeignKey('Disease', on_delete=models.CASCADE, null=True)
-    DiseaseName = models.CharField(max_length=255, null=True)
-    Notes = models.TextField(null=True)
-    Triggers = models.ManyToManyField(TriggerChecklistItem, related_name='disease_algorithm')
-    NextSteps = models.ManyToManyField(NextStep, related_name = "disease_algorithm")
-    ExamType = models.ForeignKey('ExamType', on_delete=models.CASCADE, null=True)
+    Name = models.CharField(max_length=255, null=True, blank = True)
+    Disease = models.ForeignKey('Disease', on_delete=models.CASCADE, null=True, blank = True)
+    DiseaseName = models.CharField(max_length=255, null=True, blank = True)
+    Notes = models.TextField(null=True, blank = True)
+    Triggers = models.ManyToManyField(TriggerChecklistItem, related_name='disease_algorithm', null = True, blank = True)
+    NextSteps = models.ManyToManyField(NextStep, related_name = "disease_algorithm", null = True, blank = True)
+    ExamType = models.ForeignKey('ExamType', on_delete=models.CASCADE, null=True, blank = True)
 
 class Vitals(models.Model):
-    ID = models.AutoField(primary_key=True)
     Name = models.CharField(max_length=255, null=True)
     Number = models.CharField(max_length=255, null=True, blank = True)
     Notes = models.TextField(null=True)
     ExamType = models.ForeignKey('ExamType', on_delete=models.CASCADE, null=True)
 
 class TestAssessment(models.Model):
-    ID = models.AutoField(primary_key=True)
     Name = models.CharField(max_length=255, null=True)
     Notes = models.TextField(null=True)
     Triggers = models.ManyToManyField(TriggerChecklistItem, related_name='test_assessment')
@@ -71,7 +67,6 @@ class TestAssessment(models.Model):
     ExamType = models.ForeignKey('ExamType', on_delete=models.CASCADE, null=True)
 
 class TestWorkup(models.Model):
-    ID = models.AutoField(primary_key=True)
     Name = models.CharField(max_length=255, null=True)
     Notes = models.TextField(null=True)
     Triggers = models.ManyToManyField(TriggerChecklistItem, related_name='test_workup')
@@ -80,7 +75,6 @@ class TestWorkup(models.Model):
     ExamType = models.ForeignKey('ExamType', on_delete=models.CASCADE, null=True)
 
 class HistoryWorkup(models.Model):
-    ID = models.AutoField(primary_key=True)
     Name = models.CharField(max_length=255, null=True)
     Notes = models.TextField(null=True)
     Triggers = models.ManyToManyField(TriggerChecklistItem, related_name='history_workup')
@@ -89,7 +83,6 @@ class HistoryWorkup(models.Model):
     ExamType = models.ForeignKey('ExamType', on_delete=models.CASCADE, null=True)
 
 class VitalsWorkup(models.Model):
-    ID = models.AutoField(primary_key=True)
     Name = models.CharField(max_length=255, null=True)
     Notes = models.TextField(null=True)
     Triggers = models.ManyToManyField(TriggerChecklistItem, related_name='vitals_workup')
@@ -98,21 +91,18 @@ class VitalsWorkup(models.Model):
     ExamType = models.ForeignKey('ExamType', on_delete=models.CASCADE, null=True)
 
 class Test(models.Model):
-    ID = models.AutoField(primary_key=True)
     Name = models.CharField(max_length=255, null=True)
     Number = models.CharField(max_length=255, null=True, blank = True)
     Notes = models.TextField(null=True)
     ExamType = models.ForeignKey('ExamType', on_delete=models.CASCADE, null=True)
 
 class History(models.Model):
-    ID = models.AutoField(primary_key=True)
     Name = models.CharField(max_length=255, null=True)
     Number = models.CharField(max_length=255, null=True, blank = True)
     Notes = models.TextField(null=True)
     ExamType = models.ForeignKey('ExamType', on_delete=models.CASCADE, null=True)
 
 class VitalsManagement(models.Model):
-    ID = models.AutoField(primary_key=True)
     Name = models.CharField(max_length=255, null=True)
     Notes = models.TextField(null=True)
     Triggers = models.ManyToManyField(TriggerChecklistItem, related_name='vital_management')
@@ -121,7 +111,6 @@ class VitalsManagement(models.Model):
     ExamType = models.ForeignKey('ExamType', on_delete=models.CASCADE, null=True)
 
 class HistoryAssessment(models.Model):
-    ID = models.AutoField(primary_key=True)
     Name = models.CharField(max_length=255, null=True)
     Notes = models.TextField(null=True)
     Triggers = models.ManyToManyField(TriggerChecklistItem, related_name='history_assessment')
@@ -130,7 +119,6 @@ class HistoryAssessment(models.Model):
     ExamType = models.ForeignKey('ExamType', on_delete=models.CASCADE, null=True)
 
 class PEManagement(models.Model):
-    ID = models.AutoField(primary_key=True)
     Name = models.CharField(max_length=255, null=True)
     Notes = models.TextField(null=True)
     Triggers = models.ManyToManyField(TriggerChecklistItem, related_name='pe_management')
@@ -139,14 +127,12 @@ class PEManagement(models.Model):
     ExamType = models.ForeignKey('ExamType', on_delete=models.CASCADE, null=True)
 
 class PE(models.Model):
-    ID = models.AutoField(primary_key=True)
     Name = models.CharField(max_length=255, null=True)
     Number = models.CharField(max_length=255, null=True, blank = True)
     Notes = models.TextField(null=True)
     ExamIDType = models.ForeignKey('ExamType', on_delete=models.CASCADE, null=True)
 
 class DiseaseAssessment(models.Model):
-    ID = models.AutoField(primary_key=True)
     Name = models.CharField(max_length=255, null=True)
     Disease = models.ForeignKey('Disease', on_delete=models.CASCADE, null=True)
     DiseaseName = models.CharField(max_length=255, null=True)
@@ -157,18 +143,15 @@ class DiseaseAssessment(models.Model):
     ExamType = models.ForeignKey('ExamType', on_delete=models.CASCADE, null=True)
 
 class Management(models.Model):
-    ID = models.AutoField(primary_key=True)
     Name = models.CharField(max_length=255, null=True)
     Notes = models.TextField(null=True)
 
 class Disease(models.Model):
-    ID = models.AutoField(primary_key=True)
     Name = models.CharField(max_length=255, null = True, blank=True)
     Notes = models.TextField(blank=True, null = True)
     Management = models.ForeignKey('Management', on_delete=models.CASCADE, null=True, blank=True)
 
 class TestManagement(models.Model):
-    ID = models.AutoField(primary_key=True)
     Name = models.CharField(max_length=255, null=True)
     Notes = models.TextField(null=True)
     Triggers = models.ManyToManyField(TriggerChecklistItem, related_name='test_management')
@@ -177,7 +160,6 @@ class TestManagement(models.Model):
     ExamType = models.ForeignKey('ExamType', on_delete=models.CASCADE, null=True)
 
 class PEWorkup(models.Model):
-    ID = models.AutoField(primary_key=True)
     Name = models.CharField(max_length=255, null=True)
     Notes = models.TextField(null=True)
     Triggers = models.ManyToManyField(TriggerChecklistItem, related_name='pe_workup')
@@ -186,11 +168,9 @@ class PEWorkup(models.Model):
     ExamType = models.ForeignKey('ExamType', on_delete=models.CASCADE, null=True)
 
 class ExamType(models.Model):
-    ID = models.AutoField(primary_key=True)
-    ExamType = models.CharField(max_length=255, null=True)
+    Name = models.CharField(max_length=255, null=True)
 
 class PEAssessment(models.Model):
-    ID = models.AutoField(primary_key=True)
     Name = models.CharField(max_length=255, null=True)
     Notes = models.TextField(null=True)
     Triggers = models.ManyToManyField(TriggerChecklistItem, related_name='pe_assessment')
@@ -199,7 +179,6 @@ class PEAssessment(models.Model):
     ExamType = models.ForeignKey('ExamType', on_delete=models.CASCADE, null=True)
 
 class HistoryManagement(models.Model):
-    ID = models.AutoField(primary_key=True)
     Name = models.CharField(max_length=255, null=True)
     Notes = models.TextField(null=True)
     Triggers = models.ManyToManyField(TriggerChecklistItem, related_name='history_management')
@@ -208,7 +187,6 @@ class HistoryManagement(models.Model):
     ExamType = models.ForeignKey('ExamType', on_delete=models.CASCADE, null=True)
 
 class VitalsAssessment(models.Model):
-    ID = models.AutoField(primary_key=True)
     Name = models.CharField(max_length=255, null=True)
     Notes = models.TextField(null=True)
     Triggers = models.ManyToManyField(TriggerChecklistItem, related_name='vital_assessment')
@@ -217,7 +195,6 @@ class VitalsAssessment(models.Model):
     ExamType = models.ForeignKey('ExamType', on_delete=models.CASCADE, null=True)
 
 class DiseaseManagement(models.Model):
-    ID = models.AutoField(primary_key=True)
     Name = models.CharField(max_length=255)
     Disease = models.ForeignKey('Disease', on_delete=models.CASCADE)
     DiseaseName = models.CharField(max_length=255)
