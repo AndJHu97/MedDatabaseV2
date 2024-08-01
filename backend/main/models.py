@@ -1,6 +1,5 @@
 from django.db import models
 
-#accidentally defined primary key as ID rather than using default id
 class Symptoms(models.Model):
     Name = models.CharField(max_length=255, null=True)
     Number = models.CharField(max_length=255, null=True, blank = True)
@@ -39,6 +38,7 @@ class NextStep(models.Model):
     ConditionsForNextStep = models.TextField(null = True, blank = True)
     #For the number condition
     NumberConditionsForNextStep = models.CharField(max_length=255, null=True, blank = True)
+    #Will not use for now
     OperatorConditionForNumber = models.CharField(max_length=255, null=True, blank = True)
     Symptom = models.ForeignKey('Symptoms', on_delete=models.CASCADE, null=True, blank = True)
     ExamType = models.ForeignKey('ExamType', on_delete=models.CASCADE, null=True)

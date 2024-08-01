@@ -1,7 +1,7 @@
 from rest_framework.response import Response
 from django.http import JsonResponse
 from rest_framework.decorators import api_view
-from main.models import Disease, DiseaseAlgorithm, TriggerChecklistItem, Symptoms, ExamType, NextStep
+from main.models import Disease, DiseaseAlgorithm, TriggerChecklistItem, Symptoms, ExamType, NextStep, Symptoms
 from .serializers import DiseaseSerializer, DiseaseAlgorithmSerializer, NextStepsSerializer, SymptomsSerializer, ExamTypeSerializer, TriggerChecklistItemSerializer
 from django.views.decorators.csrf import csrf_exempt
 from django.shortcuts import get_object_or_404
@@ -33,7 +33,7 @@ def showDiseaseAlgorithmDataForTree(request):
         return Response(data) 
 
 @api_view(['GET', 'POST'])
-def showDiseaseAlgorithmDataForForm(request):
+def showAndGetDiseaseAlgorithmDataForForm(request):
     if request.method == 'GET':
         symptoms = Symptoms.objects.all()
         examTypes = ExamType.objects.all()
@@ -51,10 +51,13 @@ def showDiseaseAlgorithmDataForForm(request):
 
         #DiseaseAlgorithm save
         diseaseAlgorithm_data = {
-            'Name': request.data.get('Name'),
+            'Name': request.data.get('TestName'),
             'Notes': request.data.get('Notes', ''),
             'Disease': request.data.get('DiseaseId')
         }
+
+        if request.data.get('DAExamType'):
+            diseaseAlgorithm_data['ExamType'] = request.data.get('DAExamType')
 
         diseaseAlgorithmSerializer = DiseaseAlgorithmSerializer(data = diseaseAlgorithm_data)
         if diseaseAlgorithmSerializer.is_valid():
@@ -65,19 +68,21 @@ def showDiseaseAlgorithmDataForForm(request):
                 trigger = TriggerChecklistItem.objects.get(id=triggers)
                 diseaseAlgorithm.Triggers.add(trigger)
                 diseaseAlgorithm.save()
+            
         else:
             return Response(diseaseAlgorithmSerializer.errors, status=400)
         
         #Saving nextStep
         nextStep_data = {
+            'NextStepName': request.data.get('NSName'),
             'ConditionsForNextStep': request.data.get('ConditionsForNextStep'),
             'NextStepDiseaseAlgorithm': diseaseAlgorithm.id
         }
         #in case these are null
         if request.data.get('Symptom'):
             nextStep_data['Symptom'] = request.data.get('Symptom')
-        if request.data.get('ExamType'):
-            nextStep_data['ExamType'] = request.data.get('ExamType')
+        if request.data.get('NSExamType'):
+            nextStep_data['ExamType'] = request.data.get('NSExamType')
         nextStepSerializer = NextStepsSerializer(data = nextStep_data)
         if nextStepSerializer.is_valid():
             newNextStep = nextStepSerializer.save()
@@ -170,6 +175,41 @@ def deleteNode(request):
         except DiseaseAlgorithm.DoesNotExist:
             return JsonResponse({'error': 'Algorithm not found'}, status=404)
         
+#adding symptom unlisted in form
+@api_view(['POST'])
+def add_symptom(request):
+    if request.method == 'POST':
+        symptom_name = request.data.get('name')
+        
+        if not symptom_name:
+            return JsonResponse({'error': 'Name is required'}, status=400)
+        
+        symptom_data = {
+            'Name': symptom_name
+        }
+
+        symptomAlgorithmSerialized = SymptomsSerializer(data = symptom_data)
+        if symptomAlgorithmSerialized.is_valid():
+            symptomAlgorithmSerialized = symptomAlgorithmSerialized.save()
+            return JsonResponse({'id': symptomAlgorithmSerialized.id, 'Name': symptomAlgorithmSerialized.Name}, status=201)
+        return JsonResponse({"Could not save symptom"}, status = 404)
+
+@api_view(['POST'])
+def add_disease(request):
+    if request.method == 'POST':
+        disease_data = {
+            'Name': request.data.get('Name'),
+            'Notes': request.data.get('Notes')
+        }
+        print(request.data.get('Name'))
+        disease_data_serialized = DiseaseSerializer(data = disease_data)
+        if disease_data_serialized.is_valid():
+            saved_disease_data_serialized = disease_data_serialized.save()
+            return JsonResponse({'id': saved_disease_data_serialized.id, 'Name': saved_disease_data_serialized.Name}, status = 201)
+        return JsonResponse({"Could not save disease"}, status = 404)
+
+
+        
 @api_view(['POST'])
 def inputSymptoms(request):
     if request.method == 'POST':
@@ -195,6 +235,8 @@ def inputSymptoms(request):
         #Use session variables 
 
     return JsonResponse({'error': 'Only POST requests are allowed'}, status=405)
+
+
 
 
 #archive

@@ -4,6 +4,7 @@ import React, { useEffect, useState, useCallback } from "react";
 import Tree, { RawNodeDatum, TreeNodeDatum } from "react-d3-tree";
 import axios from "axios";
 import NodeForm from "./NodeForm";
+import NewDiseaseForm from "./NewDiseaseForm";
 import './custom-tree.css';
 interface Algorithm {
   id: number;
@@ -62,6 +63,9 @@ export default function AlgorithmTree() {
 
   // check whether updating form with node
   const [updateForm, setUpdateForm] = useState<boolean>(false);
+
+  //show new disease form
+  const [showNewDiseaseForm, setShowNewDiseaseForm] = useState<boolean>(false);
 
   //run at first at beginning
   useEffect(() => {
@@ -143,7 +147,18 @@ const handleLinkClick = (
 
   return (
     // `<Tree />` will fill width/height of its container; in this case `#treeWrapper`.
-    <div id="treeWrapper" style={{ width: "50em", height: "50em" }}>
+      <div id="treeWrapper" style={{ width: "50em", height: "50em" }}>
+      <button type="button" className="btn btn-secondary ms-2" onClick={() => setShowNewDiseaseForm(!showNewDiseaseForm)}>Add Disease</button>
+      <button
+          type="button"
+          className="btn btn-secondary ms-2"
+          onClick={() => setShowNewDiseaseForm(false)}
+        >
+          Cancel New Disease
+        </button>
+      {showNewDiseaseForm && (
+        <NewDiseaseForm/>
+      )}
       <Tree data={tree} 
       orientation="vertical" 
       onNodeClick={(node) => handleTreeNodeClick(node.data)}

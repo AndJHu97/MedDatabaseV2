@@ -1,17 +1,23 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
+import { match } from "assert";
 //import { Form, FormControl, FormGroup, FormLabel, Button } from 'react-bootstrap';
 
 function NodeForm({ selectedNodeId,  selectedLinkInfo, updateForm}: { selectedNodeId: [number | null, number | null],  selectedLinkInfo: [number | null, number | null, number | null], updateForm: boolean}) {
   const [formData, setFormData] = useState({
+    //next step
+    NSName: '',
     ConditionsForNextStep: '',
     Symptom: '',
-    ExamType: '',
-    Name: '',
+    NSExamType: '',
+    //node
+    TestName: '',
     Notes:'',
     Triggers: '',
     SelectedNodeId: '',
-    DiseaseId: ''
+    DiseaseId: '',
+    //DA: DiseaseAlgorithm
+    DAExamType: ''
   });
   
   //store the linkIDhere
@@ -22,8 +28,12 @@ function NodeForm({ selectedNodeId,  selectedLinkInfo, updateForm}: { selectedNo
     Name: string;
   }
   const [symptoms, setSymptoms] = useState<PreselectedInputs[]>([]);
+  //for adding new symptoms
+  const [newSymptom, setNewSymptom] = useState('');
   const [examTypes, setExamTypes] = useState<PreselectedInputs[]>([]);
   const [triggers, setTrigger] = useState<PreselectedInputs[]>([]);
+  //modal for inputting new symptoms
+  const [showNewSymptomForm, setShowNewSymptomForm] = useState(false);
  
    // Fetch data when the component mounts
    useEffect(() => {
@@ -39,7 +49,7 @@ function NodeForm({ selectedNodeId,  selectedLinkInfo, updateForm}: { selectedNo
     };
 
     fetchData(); // Call the function to fetch data when the component mounts
-  }, []); // Pass an empty dependency array to execute the effect only once
+  }, [newSymptom]); // if you add new symptoms (with modal) will update
 
   //whenever the user selects a tree node, it changes the selected ID which activates this and updates the form variable
   useEffect(() => {
@@ -73,9 +83,10 @@ function NodeForm({ selectedNodeId,  selectedLinkInfo, updateForm}: { selectedNo
               //update form
               setFormData({
                 ...formData,
-                Name: selectedAlgorithm.Name,
+                TestName: selectedAlgorithm.Name,
                 Notes: selectedAlgorithm.Notes,
-                Triggers: selectedAlgorithm.Triggers.join(', '), // Convert array to comma-separated string
+                Triggers: selectedAlgorithm.Triggers.join(', '), // Convert array to comma-separated string,
+                DAExamType: selectedAlgorithm.ExamType
               });
             }else{
               console.log("No algorithm found when updating form");
@@ -108,9 +119,10 @@ function NodeForm({ selectedNodeId,  selectedLinkInfo, updateForm}: { selectedNo
           }
           setFormData({
             ...formData,
+            NSName: matchingNextStep.NextStepName,
             ConditionsForNextStep: matchingNextStep.ConditionsForNextStep,
             Symptom: matchingNextStep.Symptom,
-            ExamType: matchingNextStep.ExamType
+            NSExamType: matchingNextStep.ExamType
           });
         }
 
@@ -124,8 +136,8 @@ function NodeForm({ selectedNodeId,  selectedLinkInfo, updateForm}: { selectedNo
           ...prevState, // Keep the existing SelectedNodeId and DiseaseId
           ConditionsForNextStep: '',
           Symptom: '',
-          ExamType: '',
-          Name: '',
+          NSExamType: '',
+          TestName: '',
           Notes: '',
           Triggers: ''
         }));
@@ -135,6 +147,9 @@ function NodeForm({ selectedNodeId,  selectedLinkInfo, updateForm}: { selectedNo
     fetchAlgorithmData();
   }, [updateForm, selectedNodeId]); // Pass selectedNodeId as a dependency to ensure it's up-to-date
 
+  useEffect(()=> {
+    console.log("ShowModal: " + showNewSymptomForm);
+  },[showNewSymptomForm])
   // Form submission
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault(); // Prevent default form submission behavior
@@ -156,7 +171,7 @@ function NodeForm({ selectedNodeId,  selectedLinkInfo, updateForm}: { selectedNo
   };
 
   const handleUpdateLinkClick = async () => {
-    const {ConditionsForNextStep, Symptom, ExamType} = formData;
+    const {ConditionsForNextStep, Symptom, NSExamType: ExamType} = formData;
     const updatedLinkInfo = {
       ConditionsForNextStep, Symptom, ExamType,
       "selectedLinkId": selectedLinkId
@@ -174,7 +189,7 @@ function NodeForm({ selectedNodeId,  selectedLinkInfo, updateForm}: { selectedNo
    };
  
    const handleUpdateNodeClick = async () => {
-    const {Name, Notes, Triggers} = formData;
+    const {TestName: Name, Notes, Triggers} = formData;
     const updatedNodeInfo = {
       Name, Notes, Triggers, 
       "selectedNodeId": selectedNodeId[0]};
@@ -210,10 +225,31 @@ function NodeForm({ selectedNodeId,  selectedLinkInfo, updateForm}: { selectedNo
     setFormData({ ...formData, [name]: value });
   };
   
+  const handleAddSymptom = async () => {
+    try {
+      const response = await axios.post('http://localhost:8000/api/add_symptom/', { name: newSymptom });
+      setSymptoms([...symptoms, response.data]);
+      setNewSymptom('');
+      setShowNewSymptomForm(false);
+    } catch (error) {
+      console.error('Error adding symptom:', error);
+    }
+  };
 
   return (
     <form className="ms-5 mb-10" onSubmit={handleSubmit}>
       <h2>Next Step Form</h2>
+      <div className="mb-3">
+        <label htmlFor="ns-name" className="form-label">Name of Result</label>
+        <input
+          type="text"
+          className="form-control"
+          id="NSName"
+          name="NSName"
+          value={formData.NSName}
+          onChange={handleChange}
+        />
+      </div>
       <div className="mb-3">
         <label htmlFor="conditions" className="form-label">Conditions for Next Step:</label>
         <input
@@ -241,14 +277,15 @@ function NodeForm({ selectedNodeId,  selectedLinkInfo, updateForm}: { selectedNo
             </option>
           ))}
         </select>
+        <button type="button" className="btn btn-secondary ms-2" onClick={() => setShowNewSymptomForm(!showNewSymptomForm)}>+</button>
       </div>
       <div className="mb-3">
         <label htmlFor="examType" className="form-label">Exam Type:</label>
         <select
           className="form-control"
-          id="ExamType"
-          name="ExamType"
-          value={formData.ExamType}
+          id="NSExamType"
+          name="NSExamType"
+          value={formData.NSExamType}
           onChange={handleSelectChange}
         >
           <option value="">Select an Exam Type</option>
@@ -265,9 +302,9 @@ function NodeForm({ selectedNodeId,  selectedLinkInfo, updateForm}: { selectedNo
         <input
           type="text"
           className="form-control"
-          id="Name"
-          name="Name"
-          value={formData.Name}
+          id="TestName"
+          name="TestName"
+          value={formData.TestName}
           onChange={handleChange}
         />
       </div>
@@ -299,11 +336,58 @@ function NodeForm({ selectedNodeId,  selectedLinkInfo, updateForm}: { selectedNo
           ))}
         </select>
       </div>
+      <div className="mb-3">
+        <label htmlFor="examType" className="form-label">Exam Type:</label>
+        <select
+          className="form-control"
+          id="DAExamType"
+          name="DAExamType"
+          value={formData.DAExamType}
+          onChange={handleSelectChange}
+        >
+          <option value="">Select an Exam Type</option>
+          {examTypes.map((examType) => (
+            <option key={examType.id} value={examType.id}>
+              {examType.Name}
+            </option>
+          ))}
+        </select>
+      </div>
       <button type="submit" className="btn btn-primary">Submit Form</button>
       <button type="button" className="btn btn-primary" onClick={handleUpdateNodeClick} disabled = {selectedNodeId[0] == null || !updateForm}>Update Node</button>
       <button type="button" className="btn btn-primary" onClick={handleUpdateLinkClick} disabled = {selectedLinkInfo[0] == null || !updateForm}>Update Link</button>
       <button type="button" className="btn btn-primary" onClick={handleDeleteNode} disabled = {selectedNodeId[0] == null || !updateForm}>Delete Node</button>
       <button type="button" className="btn btn-primary" disabled = {selectedLinkInfo[0] == null || !updateForm}>Delete Link</button>
+
+      {showNewSymptomForm && (
+        <div className="mt-4">
+        <h2>Add New Symptom</h2>
+        <div className="mb-3">
+          <label htmlFor="new-symptom" className="form-label">Symptom Name:</label>
+          <input
+            type="text"
+            className="form-control"
+            id="new-symptom"
+            value={newSymptom}
+            onChange={(e) => setNewSymptom(e.target.value)}
+          />
+        </div>
+        <button
+          type="button"
+          className="btn btn-primary"
+          onClick={handleAddSymptom}
+        >
+          Add Symptom
+        </button>
+        <button
+          type="button"
+          className="btn btn-secondary ms-2"
+          onClick={() => setShowNewSymptomForm(false)}
+        >
+          Cancel
+        </button>
+      </div>
+    )}
     </form>
   );
 }
