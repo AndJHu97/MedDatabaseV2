@@ -17,6 +17,11 @@ interface Algorithm {
   NextSteps: NextStep[];
 }
 
+interface Disease{
+  id: number;
+  Name: string;
+}
+
 interface NextStep {
   id: number;
   NextStepName: string;
@@ -53,6 +58,14 @@ export default function AlgorithmTree() {
     children: [],
   });
 
+  interface PreselectedInputs {
+    id: number;
+    Index: number;
+    Name: string;
+  }
+  const [diseaseAlg, setDiseaseAlg] = useState<PreselectedInputs[]>([]);
+  const [selectedDisease, setSelectedDisease] = useState<PreselectedInputs>();
+
    //node: get the node ID and diseaseID to send to the nodeform
    const [selectedNodeId, setSelectedNodeId] = useState<[number | null, number | null]>([null, null]);
 
@@ -66,8 +79,7 @@ export default function AlgorithmTree() {
 
   //show new disease form
   const [showNewDiseaseForm, setShowNewDiseaseForm] = useState<boolean>(false);
-
-  //run at first at beginning
+  //run at first at beginning. Set tree and get list of diseases
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -76,30 +88,53 @@ export default function AlgorithmTree() {
           "http://localhost:8000/api/algorithms/"
         );
         const data = response.data;
-        console.log(data[0]);
+        
+        //get selectedDiseaseTree (default is tree of 0 index)
+        const index = selectedDisease?.Index || 0;
 
         // Convert the array of Algorithm objects to a Map
         const algorithmMap: Map<number, Algorithm> =
-          response.data[0].algorithms.reduce((map, algorithm) => {
+          response.data[index].algorithms.reduce((map, algorithm) => {
             //convert to algorithm with key of id
             map.set(algorithm.id, algorithm);
             return map;
           }, new Map<number, Algorithm>());
         
-        
-        //create nodes
-        const formattedData: RawNodeDatum = {
-          //this is for the algorith for the specific disease (like HTN)
-          name: data[0].Name,
-          //create the rest of nodes
-          children: data[0].algorithms.map((algorithm) => ({
-            name: algorithm.Name,
-          })),
-        };
-        const tree = createTree(response.data[0].algorithms[0], algorithmMap);
+          //this will be root node, whose children will be the algorithm
+        const diseaseNode: Disease = {
+          id: data[index].id,
+          Name: data[index].Name,
+        }
+        const tree = createTree(diseaseNode, response.data[index].algorithms[0], algorithmMap);
         setTree(tree);
+
       } catch (error) {
-        console.error("Error submitting symptoms:", error);
+        console.error("Error getting the disease algorithm tree information:", error);
+      }
+    };
+    fetchData();
+  }, [selectedDisease]);
+
+  //This is for selecting a disease tree
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        //waits until gets these nodes to run rest
+        const response = await axios.get<Node[]>(
+          "http://localhost:8000/api/algorithms/"
+        );
+        //set the disease information. Note, second paramet of callback is index automatically for map
+        const diseaseData = response.data.map((disease: any, index: number) => ({
+          id: disease.id,
+          Index: index,
+          Name: disease.Name
+        }
+      ));
+
+        setDiseaseAlg(diseaseData);
+
+      } catch (error) {
+        console.error("Error getting the disease algorithm tree information:", error);
       }
     };
     fetchData();
@@ -145,6 +180,13 @@ const handleLinkClick = (
   console.log('Target node name:', targetNode.name);
 };
 
+//get the disease
+const handleDiseaseSelect = (e: React.ChangeEvent<HTMLSelectElement>) => {
+  const selectedId = parseInt(e.target.value);
+  const selectedDisease = diseaseAlg.find(disease => disease.id === selectedId);
+  setSelectedDisease(selectedDisease);
+};
+
   return (
     // `<Tree />` will fill width/height of its container; in this case `#treeWrapper`.
       <div id="treeWrapper" style={{ width: "50em", height: "50em" }}>
@@ -159,6 +201,26 @@ const handleLinkClick = (
       {showNewDiseaseForm && (
         <NewDiseaseForm/>
       )}
+
+      <div className="mb-3">
+        <label htmlFor="diseaseSelect" className="form-label">Select Disease Tree:</label>
+        <select
+          className="form-control"
+          id="diseaseAlg"
+          name={selectedDisease?.Name}
+          value={selectedDisease?.id}
+          onChange={handleDiseaseSelect}
+        >
+          <option value="">Select a Disease</option>
+          {diseaseAlg.map((diseaseAlgEach) => (
+            <option key={diseaseAlgEach.id} value={diseaseAlgEach.id}>
+              {diseaseAlgEach.Name}
+            </option>
+          ))}
+        </select>
+        </div>
+
+
       <Tree data={tree} 
       orientation="vertical" 
       onNodeClick={(node) => handleTreeNodeClick(node.data)}
@@ -176,16 +238,34 @@ const handleLinkClick = (
 
 const tree: RawNodeDatum[] = [];
 
-function createTree(root: Algorithm, algorithmMap: Map<number, Algorithm>) {
-  //create the root node
-  const rootNode: RawNodeDatum = {
-    name: root.Name,
+function createTree(diseaseNode: Disease, root: Algorithm, algorithmMap: Map<number, Algorithm>) {
+  const rootDiseaseNode: RawNodeDatum = {
+    name: diseaseNode.Name,
     attributes: {
-      "id": root.id
+      "id": diseaseNode.id
     },
   };
-  const tree = DFSRecursive(rootNode, algorithmMap);
-  return tree;
+
+  rootDiseaseNode.children = [];
+  
+  if(root != undefined){
+     //create the root node
+    const rootAlgNode: RawNodeDatum = {
+      name: root.Name,
+      attributes: {
+        "id": root.id
+      },
+    };
+    console.log("Algorithm Map: " + algorithmMap);
+    const tree = DFSRecursive(rootAlgNode, algorithmMap);
+
+    rootDiseaseNode.children.push(tree);
+    //Final tree has disease node as first one
+    
+
+  }
+  const finalTree = rootDiseaseNode;
+  return finalTree;
 
 }
 

@@ -20,6 +20,7 @@ function NodeForm({ selectedNodeId,  selectedLinkInfo, updateForm}: { selectedNo
     DAExamType: ''
   });
   
+
   //store the linkIDhere
   const [selectedLinkId, setSelectedLinkId] = useState<number>();
   
@@ -27,7 +28,10 @@ function NodeForm({ selectedNodeId,  selectedLinkInfo, updateForm}: { selectedNo
     id: number;
     Name: string;
   }
+
   const [symptoms, setSymptoms] = useState<PreselectedInputs[]>([]);
+
+
   //for adding new symptoms
   const [newSymptom, setNewSymptom] = useState('');
   const [examTypes, setExamTypes] = useState<PreselectedInputs[]>([]);
