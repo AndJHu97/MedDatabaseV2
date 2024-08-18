@@ -1,0 +1,24 @@
+
+form {
+    font-size: 0.8rem; 
+  }
+
+.smaller-text {
+font-size: 0.8rem; 
+}
+
+.smaller-text .form-content h2 {
+font-size: 0.3rem; 
+}
+
+.smaller-text .form-content .form-label {
+font-size: 0.9rem; 
+}
+
+.smaller-text .form-content .form-control {
+font-size: 0.8rem; 
+}
+
+.smaller-text .form-content .btn {
+font-size: 0.8rem;
+}

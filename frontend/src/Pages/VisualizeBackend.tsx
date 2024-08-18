@@ -1,7 +1,7 @@
 import axios from 'axios';
 import React, { useState } from 'react';
 import 'bootstrap/dist/css/bootstrap.min.css';
-import Disease from '../VisualizationComponents/Disease'
+import VisualizationMain from '../VisualizationComponents/VisualizationMain'
 
 interface SymptomFormProps {}
 
@@ -10,7 +10,7 @@ const SymptomForm: React.FC<SymptomFormProps> = () => {
 
 
   return (
-   <Disease />
+   <VisualizationMain />
   );
 };
 

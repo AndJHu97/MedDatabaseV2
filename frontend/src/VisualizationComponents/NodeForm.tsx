@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
-import { match } from "assert";
+import './form.css';
 //import { Form, FormControl, FormGroup, FormLabel, Button } from 'react-bootstrap';
 
 function NodeForm({ selectedNodeId,  selectedLinkInfo, updateForm}: { selectedNodeId: [number | null, number | null],  selectedLinkInfo: [number | null, number | null, number | null], updateForm: boolean}) {
@@ -138,12 +138,19 @@ function NodeForm({ selectedNodeId,  selectedLinkInfo, updateForm}: { selectedNo
         //if turn off update, then clear the form
         setFormData(prevState => ({
           ...prevState, // Keep the existing SelectedNodeId and DiseaseId
+           //next step
+          NSName: '',
           ConditionsForNextStep: '',
           Symptom: '',
           NSExamType: '',
+          //node
           TestName: '',
-          Notes: '',
-          Triggers: ''
+          Notes:'',
+          Triggers: '',
+          SelectedNodeId: '',
+          DiseaseId: '',
+          //DA: DiseaseAlgorithm
+          DAExamType: ''
         }));
       }
     };

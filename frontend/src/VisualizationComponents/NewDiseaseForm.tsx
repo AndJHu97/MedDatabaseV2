@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import axios from 'axios';
+import './form.css';
 
 
 export default function NewDiseaseForm() {
@@ -12,6 +13,9 @@ export default function NewDiseaseForm() {
         Name: '',
         Notes: ''
       };
+
+        //show new disease form
+  const [showNewDiseaseForm, setShowNewDiseaseForm] = useState<boolean>(false);
 
   const handleAddDisease = async () => {
     try {
@@ -29,7 +33,13 @@ export default function NewDiseaseForm() {
   };
 
   return (
-    <div className="mt-4">
+    <div className="mt-4 smaller-text">
+      <button type="button" className="btn btn-secondary ms-2" onClick={() => setShowNewDiseaseForm(!showNewDiseaseForm)}>
+      {showNewDiseaseForm ? "Hide Form" : "Add Disease"}
+        
+      </button>
+        {showNewDiseaseForm && (
+        <div>
         <h2>Add New Disease</h2>
         <div className="mb-3">
           <label htmlFor="Name" className="form-label">Disease Name:</label>
@@ -62,7 +72,8 @@ export default function NewDiseaseForm() {
         >
           Add Disease
         </button>
-        
+        </div>
+  )}
         </div>
   );
 };

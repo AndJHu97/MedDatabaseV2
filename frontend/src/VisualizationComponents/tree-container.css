@@ -1,0 +1,29 @@
+/* custom-tree.css */
+
+#treeWrapper {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+    height: 100vh; /* Full viewport height */
+    padding: 1em;
+  }
+  
+  .tree-container {
+    width: 100%;
+    height: calc(100vh - 150px); /* Adjust height based on other elements */
+    overflow: auto; /* Add scroll if necessary */
+  }
+  
+  @media (max-width: 768px) {
+    .tree-container {
+      height: calc(100vh - 120px); /* Adjust height for smaller screens */
+    }
+  }
+  
+  @media (min-width: 1200px) {
+    .tree-container {
+      height: calc(100vh - 100px); /* Adjust height for larger screens */
+    }
+  }
+  
