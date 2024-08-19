@@ -4,6 +4,7 @@ import React, { useEffect, useState} from "react";
 import NodeForm from "./NodeForm";
 import AlgorithmTree from "./AlgorithmTree";
 import NewDiseaseForm from "./NewDiseaseForm";
+import DiseaseDropdownSelection from "./Disease-Dropdown-Selection";
 import {useFetchDiseaseSelection} from "../Utilities/useFetchDiseaseSelection";
 import './custom-tree.css';
 
@@ -15,11 +16,10 @@ interface PreselectedInputs {
 
 export default function VisualizeBackend() {
   
-  const [diseaseAlg, setDiseaseAlg] = useState<PreselectedInputs[]>([]);
   const [selectedDisease, setSelectedDisease] = useState<PreselectedInputs | null>();
-   //node: get the node ID and diseaseID to send to the nodeform
-   const [selectedNodeId, setSelectedNodeId] = useState<[number | null, number | null]>([null, null]);
-
+  //node: get the node ID and diseaseID to send to the nodeform
+  const [selectedNodeId, setSelectedNodeId] = useState<[number | null, number | null]>([null, null]);
+  const [diseaseOptions, setDiseaseOptions] = useState<PreselectedInputs[]>([]);
   //next step info to send
   //Nextstep sourceID, targetID, diseaseID
   const [selectedLinkInfo, setSelectedLinkInfo] = useState<[number | null, number | null, number | null]>([null,null,null]);
@@ -27,13 +27,6 @@ export default function VisualizeBackend() {
 
   // check whether updating form with node
   const [updateForm, setUpdateForm] = useState<boolean>(false);
-
-  //get diseasedata for disease tree dropdown menu to select
-  //TO DO MOVE TO NEW FORM
-  const diseaseData = useFetchDiseaseSelection();
-  useEffect(() =>{
-    setDiseaseAlg(diseaseData);
-  })
   
    // Add event listener for key presses for update
    useEffect(() => {
@@ -44,6 +37,11 @@ export default function VisualizeBackend() {
         console.log("Updating value: ", updateForm);
       }
     };
+  
+  const diseaseData = useFetchDiseaseSelection();
+  useEffect(() =>{
+      setDiseaseOptions(diseaseData);
+  })
 
     window.addEventListener('keydown', handleKeyPress);
 
@@ -67,38 +65,27 @@ export default function VisualizeBackend() {
     }
   }
 
-//get the disease
-//TO DO put in separate form along with the Select Disease Tree
-const handleDiseaseSelect = (e: React.ChangeEvent<HTMLSelectElement>) => {
-  const selectedId = parseInt(e.target.value);
-  const selectedDisease = diseaseAlg.find(disease => disease.id === selectedId);
-  setSelectedDisease(selectedDisease);
-};
+  //NewDiseaseForm: Add disease and update the selection
+  const handleNewDiseaseAdded = () =>{
+    const updatedDiseaseData = useFetchDiseaseSelection();
+    setDiseaseOptions(updatedDiseaseData);
+  }
+
+  //get disease change from Disease-Dropdown-Selection
+  const handleDiseaseSelectionChange = (newSelectedDisease: PreselectedInputs | undefined) =>{
+    if(newSelectedDisease){
+      setSelectedDisease(newSelectedDisease);
+    }
+  }
 
   return (
     //make add disease a separate form
       <div style={{ display: "flex", flexDirection: "column", alignItems: "center", width: "100%", height: "100%" }}>
-        <NewDiseaseForm/>
+      <NewDiseaseForm onNewDiseaseAdded={handleNewDiseaseAdded}/>
 
-      <div className="mb-3">
-        <label htmlFor="diseaseSelect" className="form-label">Select Disease Tree:</label>
-        <select
-          className="form-control"
-          id="diseaseAlg"
-          name={selectedDisease?.Name}
-          value={selectedDisease?.id}
-          onChange={handleDiseaseSelect}
-        >
-          <option value="">Select a Disease</option>
-          {diseaseAlg.map((diseaseAlgEach) => (
-            <option key={diseaseAlgEach.id} value={diseaseAlgEach.id}>
-              {diseaseAlgEach.Name}
-            </option>
-          ))}
-        </select>
-        </div>
+      <DiseaseDropdownSelection onDiseaseSelectionChange={handleDiseaseSelectionChange} diseaseOptions={diseaseOptions}/>
 
-      <div id="treeWrapper" style={{ width: "100%", height: "400px" }}>
+      <div id="treeWrapper" style={{ width: "70%", height: "400px" }}>
       <AlgorithmTree selectedDisease={selectedDisease || null} onStateChange={handleTreeStateChange}/>
       </div>
       <NodeForm selectedNodeId={selectedNodeId}  selectedLinkInfo={selectedLinkInfo} updateForm = {updateForm}/>

@@ -2,8 +2,11 @@ import React, { useState } from 'react';
 import axios from 'axios';
 import './form.css';
 
+interface NewDiseaseFormProps {
+  onNewDiseaseAdded: () => void; // Define the prop type
+}
 
-export default function NewDiseaseForm() {
+export default function NewDiseaseForm({ onNewDiseaseAdded} : NewDiseaseFormProps) {
     const [diseaseFormData, setDiseaseFormData] = useState({
        Name: '',
        Notes: ''
@@ -21,6 +24,7 @@ export default function NewDiseaseForm() {
     try {
         const response = await axios.post('http://localhost:8000/api/add_disease/', diseaseFormData);
         setDiseaseFormData(initialFormState);
+        onNewDiseaseAdded();
     } catch (error) {
       console.error('Error adding symptom:', error);
     }
