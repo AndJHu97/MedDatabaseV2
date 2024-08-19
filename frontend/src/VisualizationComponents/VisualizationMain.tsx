@@ -5,7 +5,6 @@ import NodeForm from "./NodeForm";
 import AlgorithmTree from "./AlgorithmTree";
 import NewDiseaseForm from "./NewDiseaseForm";
 import DiseaseDropdownSelection from "./Disease-Dropdown-Selection";
-import {useFetchDiseaseSelection} from "../Utilities/useFetchDiseaseSelection";
 import './custom-tree.css';
 
 interface PreselectedInputs {
@@ -15,11 +14,10 @@ interface PreselectedInputs {
 }
 
 export default function VisualizeBackend() {
-  
+  const [updateDiseaseDropdown, setUpdateDiseaseDropdown] = useState<boolean>(false);
   const [selectedDisease, setSelectedDisease] = useState<PreselectedInputs | null>();
   //node: get the node ID and diseaseID to send to the nodeform
   const [selectedNodeId, setSelectedNodeId] = useState<[number | null, number | null]>([null, null]);
-  const [diseaseOptions, setDiseaseOptions] = useState<PreselectedInputs[]>([]);
   //next step info to send
   //Nextstep sourceID, targetID, diseaseID
   const [selectedLinkInfo, setSelectedLinkInfo] = useState<[number | null, number | null, number | null]>([null,null,null]);
@@ -38,10 +36,7 @@ export default function VisualizeBackend() {
       }
     };
   
-  const diseaseData = useFetchDiseaseSelection();
-  useEffect(() =>{
-      setDiseaseOptions(diseaseData);
-  })
+  
 
     window.addEventListener('keydown', handleKeyPress);
 
@@ -67,8 +62,7 @@ export default function VisualizeBackend() {
 
   //NewDiseaseForm: Add disease and update the selection
   const handleNewDiseaseAdded = () =>{
-    const updatedDiseaseData = useFetchDiseaseSelection();
-    setDiseaseOptions(updatedDiseaseData);
+    setUpdateDiseaseDropdown(prevUpdateDiseaseDropdown => !prevUpdateDiseaseDropdown);
   }
 
   //get disease change from Disease-Dropdown-Selection
@@ -83,7 +77,7 @@ export default function VisualizeBackend() {
       <div style={{ display: "flex", flexDirection: "column", alignItems: "center", width: "100%", height: "100%" }}>
       <NewDiseaseForm onNewDiseaseAdded={handleNewDiseaseAdded}/>
 
-      <DiseaseDropdownSelection onDiseaseSelectionChange={handleDiseaseSelectionChange} diseaseOptions={diseaseOptions}/>
+      <DiseaseDropdownSelection onDiseaseSelectionChange={handleDiseaseSelectionChange} onUpdate = {updateDiseaseDropdown}/>
 
       <div id="treeWrapper" style={{ width: "70%", height: "400px" }}>
       <AlgorithmTree selectedDisease={selectedDisease || null} onStateChange={handleTreeStateChange}/>

@@ -8,14 +8,22 @@ interface PreselectedInputs {
 
   interface DiseaseDropdownSelection{
     onDiseaseSelectionChange: (newSelectedDisease: PreselectedInputs | undefined) => void;
-    diseaseOptions: PreselectedInputs[];
+    onUpdate: boolean;
   }
 
-export default function DiseaseDropdownSelection({onDiseaseSelectionChange, diseaseOptions}: DiseaseDropdownSelection)
+export default function DiseaseDropdownSelection({onDiseaseSelectionChange, onUpdate}: DiseaseDropdownSelection)
 {
     const [selectedDisease, setSelectedDisease] = useState<PreselectedInputs | null>();
-    
+    //const [diseaseOptions, setDiseaseOptions] = useState<PreselectedInputs[]>([]);
 
+    const diseaseOptions = useFetchDiseaseSelection(onUpdate);
+    /*
+    useEffect(() =>{
+        
+        setDiseaseOptions(diseaseData);
+        console.log("update dropdown: " + onUpdate);
+    }, [onUpdate])
+    */
     const handleDiseaseSelect = (e: React.ChangeEvent<HTMLSelectElement>) => {
         const selectedId = parseInt(e.target.value);
         const selectedDisease = diseaseOptions.find(disease => disease.id === selectedId);

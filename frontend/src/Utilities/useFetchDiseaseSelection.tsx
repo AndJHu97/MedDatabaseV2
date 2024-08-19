@@ -16,7 +16,7 @@ interface PreselectedInputs {
   }
  
 
-export function useFetchDiseaseSelection(){
+export function useFetchDiseaseSelection(trigger: boolean){
     const [diseaseAlg, setDiseaseAlg] = useState<PreselectedInputs[]>([]);
   //This is for selecting a disease tree
   useEffect(() => {
@@ -41,7 +41,7 @@ export function useFetchDiseaseSelection(){
       }
     };
     fetchData();
-  }, []);
+  }, [trigger]);
 
   return diseaseAlg;
 }

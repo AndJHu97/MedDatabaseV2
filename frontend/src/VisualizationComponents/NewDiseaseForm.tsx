@@ -4,6 +4,7 @@ import './form.css';
 
 interface NewDiseaseFormProps {
   onNewDiseaseAdded: () => void; // Define the prop type
+
 }
 
 export default function NewDiseaseForm({ onNewDiseaseAdded} : NewDiseaseFormProps) {
