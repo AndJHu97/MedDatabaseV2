@@ -46,7 +46,7 @@ interface Node {
     ExamType: number;
   }
 
-export function useFetchTree(disease_index: number){
+export function useFetchTree(disease_index: number, updateTree: boolean){
     const [treeData, setTreeData] = useState<[Disease, Algorithm, Map<number, Algorithm>] | null>(null);
     useEffect(() => {
         const fetchData = async () => {
@@ -56,7 +56,7 @@ export function useFetchTree(disease_index: number){
               "http://localhost:8000/api/algorithms/"
             );
             const data = response.data;
-            
+            console.log("useFetchTree");
             //get selectedDiseaseTree (default is tree of 0 index)
             //const index = selectedDisease?.Index || 0;
     
@@ -88,7 +88,7 @@ export function useFetchTree(disease_index: number){
         };
         console.log("disease_index: " + disease_index);
         fetchData();
-      }, [disease_index]);
+      }, [disease_index, updateTree]);
 
       return treeData;
     

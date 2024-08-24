@@ -21,7 +21,7 @@ export default function VisualizeBackend() {
   //next step info to send
   //Nextstep sourceID, targetID, diseaseID
   const [selectedLinkInfo, setSelectedLinkInfo] = useState<[number | null, number | null, number | null]>([null,null,null]);
-
+  const [updateTree, setUpdateTree] = useState<boolean>(false);
 
   // check whether updating form with node
   const [updateForm, setUpdateForm] = useState<boolean>(false);
@@ -45,6 +45,12 @@ export default function VisualizeBackend() {
       window.removeEventListener('keydown', handleKeyPress);
     };
   }, []);
+
+  
+
+  const onUpdateTree = () => {
+    setUpdateTree(prevUpdateTree => !prevUpdateTree);
+  }
 
   const handleTreeStateChange = (newState: { selectedNodeId: [number | null, number | null]; selectedLinkInfo: [number | null, number | null, number | null]; updateForm: boolean }) => {
     if(newState.selectedNodeId){
@@ -72,6 +78,7 @@ export default function VisualizeBackend() {
     }
   }
 
+
   return (
     //make add disease a separate form
       <div style={{ display: "flex", flexDirection: "column", alignItems: "center", width: "100%", height: "100%" }}>
@@ -80,9 +87,9 @@ export default function VisualizeBackend() {
       <DiseaseDropdownSelection onDiseaseSelectionChange={handleDiseaseSelectionChange} onUpdate = {updateDiseaseDropdown}/>
 
       <div id="treeWrapper" style={{ width: "70%", height: "400px" }}>
-      <AlgorithmTree selectedDisease={selectedDisease || null} onStateChange={handleTreeStateChange}/>
+      <AlgorithmTree selectedDisease={selectedDisease || null} updateTree = {updateTree} onStateChange={handleTreeStateChange}/>
       </div>
-      <NodeForm selectedNodeId={selectedNodeId}  selectedLinkInfo={selectedLinkInfo} updateForm = {updateForm}/>
+      <NodeForm selectedNodeId={selectedNodeId}  selectedLinkInfo={selectedLinkInfo} updateForm = {updateForm} onUpdateTree={onUpdateTree}/>
   
   </div>
   );

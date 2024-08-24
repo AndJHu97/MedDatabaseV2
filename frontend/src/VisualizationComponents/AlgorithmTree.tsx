@@ -45,21 +45,23 @@ interface NextStep {
         id: number;
         Index: number;
         Name: string;
+        
     }
 
     interface AlgorithmTreeProp{
         selectedDisease: PreselectedInputs | null;
+        updateTree: boolean;
         onStateChange: (newState: {selectedNodeId: [number | null, number | null]; selectedLinkInfo: [number | null, number | null, number | null]; updateForm: boolean }) => void; // Update callback type
     }
 
-    export default function AlgorithmTree({selectedDisease, onStateChange}: AlgorithmTreeProp) {
+    export default function AlgorithmTree({selectedDisease, updateTree, onStateChange}: AlgorithmTreeProp) {
 
     //set tree variable to look like the RawNodeDatum(s). Set first node to have these 2 parameters' value
     const [tree, setTree] = useState<RawNodeDatum | RawNodeDatum[]>({
         name: "Root",
         children: [],
     });
-    
+    console.log("Loading tree");
 
     //node: get the node ID and diseaseID to send to the nodeform
     const [selectedNodeId, setSelectedNodeId] = useState<[number | null, number | null]>([null, null]);
@@ -76,14 +78,15 @@ interface NextStep {
     //set the tree
     const selectedDiseaseIndex = selectedDisease?.Index || 0;
     //useHooks and useState have to be outside of conditions. Call at top level
-    var treeData = useFetchTree(selectedDiseaseIndex);
+    var treeData = useFetchTree(selectedDiseaseIndex, updateTree);
     useEffect(() => {
         if (treeData) {
+        console.log("tree data fetching");
         const [diseaseNode, algorithm, algorithmMap] = treeData;
         const tree = createTree(diseaseNode, algorithm, algorithmMap);
         setTree(tree);
         }
-    }, [treeData]);
+    }, [treeData, updateTree]);
 
    const handleTreeNodeClick = (nodeDatum: TreeNodeDatum) => {
         //erases link info because not updating that anymore
@@ -142,7 +145,8 @@ function createTree(diseaseNode: Disease, root: Algorithm, algorithmMap: Map<num
     const rootAlgNode: RawNodeDatum = {
       name: root.Name,
       attributes: {
-        "id": root.id
+        "id": root.id,
+        "diseaseId": diseaseNode.id
       },
     };
     console.log("Algorithm Map: " + algorithmMap);

@@ -3,7 +3,14 @@ import axios from "axios";
 import './form.css';
 //import { Form, FormControl, FormGroup, FormLabel, Button } from 'react-bootstrap';
 
-function NodeForm({ selectedNodeId,  selectedLinkInfo, updateForm}: { selectedNodeId: [number | null, number | null],  selectedLinkInfo: [number | null, number | null, number | null], updateForm: boolean}) {
+interface NodeFormProps{
+  selectedNodeId: [number | null, number | null];
+  selectedLinkInfo: [number | null, number | null, number | null]; 
+  updateForm: boolean;
+  onUpdateTree: () => void;
+}
+
+function NodeForm({ selectedNodeId,  selectedLinkInfo, updateForm, onUpdateTree}: NodeFormProps) {
   const [formData, setFormData] = useState({
     //next step
     NSName: '',
@@ -62,8 +69,13 @@ function NodeForm({ selectedNodeId,  selectedLinkInfo, updateForm}: { selectedNo
       DiseaseId: selectedNodeId[1] !== null ? selectedNodeId[1].toString() : ''
     }));
     console.log("Node ID in form: " + selectedNodeId);
-    console.log("update form bool: " + updateForm);
   },[selectedNodeId])
+
+  useEffect(() =>{
+    console.log("NSName: " + formData.NSName);
+    console.log("selectedNodeId: " + formData.SelectedNodeId);
+    console.log("DiseaseId: " + formData.DiseaseId);
+  },[formData])
 
    // Fetch algorithm data to get rest of info of node
    useEffect(() => {
@@ -135,7 +147,7 @@ function NodeForm({ selectedNodeId,  selectedLinkInfo, updateForm}: { selectedNo
         }
       }
       else{
-        //if turn off update, then clear the form
+        //if turn off update, then clear the form except for the new id's
         setFormData(prevState => ({
           ...prevState, // Keep the existing SelectedNodeId and DiseaseId
            //next step
@@ -147,8 +159,6 @@ function NodeForm({ selectedNodeId,  selectedLinkInfo, updateForm}: { selectedNo
           TestName: '',
           Notes:'',
           Triggers: '',
-          SelectedNodeId: '',
-          DiseaseId: '',
           //DA: DiseaseAlgorithm
           DAExamType: ''
         }));
@@ -161,18 +171,23 @@ function NodeForm({ selectedNodeId,  selectedLinkInfo, updateForm}: { selectedNo
   useEffect(()=> {
     console.log("ShowModal: " + showNewSymptomForm);
   },[showNewSymptomForm])
+
+
   // Form submission
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault(); // Prevent default form submission behavior
     //make sure a current node is selected
+    console.log("Submitting NSName: " + formData.NSName);
     console.log("selectedNodeId: " + formData.SelectedNodeId);
     console.log("DiseaseId: " + formData.DiseaseId);
+    
     if(formData.SelectedNodeId !== '' && formData.SelectedNodeId !== null){
       try {
         // Send data rest to post with axios
         const formDataJSON = JSON.stringify(formData);
         console.log(formDataJSON);
         const response = await axios.post("http://localhost:8000/api/algorithmsForm/", formData);
+        onUpdateTree();
         console.log("Form submitted successfully: ", response.data);
       } catch (error) {
         console.error('Error submitting form:', error);
@@ -192,6 +207,7 @@ function NodeForm({ selectedNodeId,  selectedLinkInfo, updateForm}: { selectedNo
       const updatedLinkInfoJSON = JSON.stringify(updatedLinkInfo);
       console.log("updated Node Info: " + updatedLinkInfoJSON);
       const response = await axios.post("http://localhost:8000/api/updateLink/", updatedLinkInfo);
+      onUpdateTree();
       console.log("Form submitted successfully: ", response.data);
     } catch(error){
       console.error('Error updating link form:', error);
@@ -208,6 +224,7 @@ function NodeForm({ selectedNodeId,  selectedLinkInfo, updateForm}: { selectedNo
       const updatedNodeInfoJSON = JSON.stringify(updatedNodeInfo);
       console.log("updated Node Info: " + updatedNodeInfoJSON);
       const response = await axios.post("http://localhost:8000/api/updateNode/", updatedNodeInfo);
+      onUpdateTree();
       console.log("Form submitted successfully: ", response.data);
     } catch(error){
       console.error('Error updating node form:', error);
@@ -221,6 +238,8 @@ function NodeForm({ selectedNodeId,  selectedLinkInfo, updateForm}: { selectedNo
 
       try{
         const response = await axios.delete("http://localhost:8000/api/deleteNode/", {data: deletedNodeId});
+        onUpdateTree();
+        console.log("Form submitted successfully: ", response.data);
       }catch(error){
         console.error('Error updating node form:', error);
       }
