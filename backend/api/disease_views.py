@@ -33,7 +33,7 @@ def showDiseaseAlgorithmDataForTree(request):
         return Response(data) 
 
 @api_view(['GET', 'POST'])
-def showAndGetDiseaseAlgorithmDataForForm(request):
+def GetAndPostDiseaseAlgorithmDataForForm(request):
     if request.method == 'GET':
         symptoms = Symptoms.objects.all()
         examTypes = ExamType.objects.all()
@@ -104,6 +104,26 @@ def showAndGetDiseaseAlgorithmDataForForm(request):
                 'disease_algorithm': diseaseAlgorithmSerializer.data
             }, status=201)
 
+#If disease has no nodes, this adds the first one
+@api_view(['POST'])
+def Post_Initial_DiseaseAlgorithmNode(request):
+    if request.method == 'POST':
+
+        #DiseaseAlgorithm save
+        diseaseAlgorithm_data = {
+            'Name': request.data.get('Name'),
+            'Notes': request.data.get('Notes', ''),
+            'Disease': request.data.get('DiseaseId')
+        }
+        diseaseAlgorithmSerializer = DiseaseAlgorithmSerializer(data = diseaseAlgorithm_data)
+        if diseaseAlgorithmSerializer.is_valid():
+            diseaseAlgorithmSerializer.save()
+
+        if diseaseAlgorithmSerializer.is_valid():
+            diseaseAlgorithmSerializer.save()
+            return Response(diseaseAlgorithmSerializer.data, status=201)
+        else:
+            return Response(diseaseAlgorithmSerializer.errors, status=400)
         
 @api_view(['POST'])
 def updateNode(request):

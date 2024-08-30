@@ -1,5 +1,6 @@
 import React, { useEffect, useState, useCallback } from "react";
 import Tree, { RawNodeDatum, TreeNodeDatum } from "react-d3-tree";
+import axios from "axios";
 import './custom-tree.css';
 import './tree-container.css';
 import {useFetchTree} from "../Utilities/useFetchTree";
@@ -74,18 +75,36 @@ interface NextStep {
     // check whether updating form with node
     const [updateForm, setUpdateForm] = useState<boolean>(false);
 
-
     //set the tree
     const selectedDiseaseIndex = selectedDisease?.Index || 0;
     //useHooks and useState have to be outside of conditions. Call at top level
     var treeData = useFetchTree(selectedDiseaseIndex, updateTree);
     useEffect(() => {
+      const fetch_and_set_tree = async() =>{
         if (treeData) {
-        console.log("tree data fetching");
         const [diseaseNode, algorithm, algorithmMap] = treeData;
+
+        //if there are no nodes for disease, then make the first node
+        if(algorithm == null || algorithm == undefined){
+          console.log("adding first node");
+          try{
+            const firstNode = {
+              Name: "Insert First Test Here",
+              Notes: "Edit This Node",
+              DiseaseId: diseaseNode.id
+            }
+            console.log(firstNode);
+            const response = await axios.post("http://localhost:8000/api/addFirstNode/", firstNode)
+          } catch (error) {
+            console.error('Error adding first node:', error);
+          }
+        }
         const tree = createTree(diseaseNode, algorithm, algorithmMap);
         setTree(tree);
         }
+      };
+      fetch_and_set_tree();
+
     }, [treeData, updateTree]);
 
    const handleTreeNodeClick = (nodeDatum: TreeNodeDatum) => {
@@ -93,7 +112,6 @@ interface NextStep {
         setSelectedLinkInfo([null,null,null]);
         setUpdateForm(false);
         setSelectedNodeId([parseInt(nodeDatum.attributes?.id as string) ?? null, parseInt(nodeDatum.attributes?.diseaseId as string) ?? null]);
-        console.log("Node ID:", parseInt(nodeDatum.attributes?.id as string) ?? null);
         onStateChange({selectedNodeId: selectedNodeId, selectedLinkInfo: selectedLinkInfo, updateForm: updateForm})
       };
     
@@ -102,7 +120,7 @@ interface NextStep {
       sourceNode: TreeNodeDatum,
       targetNode: TreeNodeDatum
     ) => {
-      //erase node info
+      //erase node info since working on edge now
       setSelectedNodeId([null, null]);
       setUpdateForm(false);
       setSelectedLinkInfo([parseInt(sourceNode.attributes?.id as string), parseInt(targetNode.attributes?.id as string), parseInt(sourceNode.attributes?.diseaseId as string) ?? null])
@@ -149,7 +167,6 @@ function createTree(diseaseNode: Disease, root: Algorithm, algorithmMap: Map<num
         "diseaseId": diseaseNode.id
       },
     };
-    console.log("Algorithm Map: " + algorithmMap);
     const tree = DFSRecursive(rootAlgNode, algorithmMap);
 
     rootDiseaseNode.children.push(tree);

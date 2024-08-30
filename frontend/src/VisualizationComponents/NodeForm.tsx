@@ -71,11 +71,6 @@ function NodeForm({ selectedNodeId,  selectedLinkInfo, updateForm, onUpdateTree}
     console.log("Node ID in form: " + selectedNodeId);
   },[selectedNodeId])
 
-  useEffect(() =>{
-    console.log("NSName: " + formData.NSName);
-    console.log("selectedNodeId: " + formData.SelectedNodeId);
-    console.log("DiseaseId: " + formData.DiseaseId);
-  },[formData])
 
    // Fetch algorithm data to get rest of info of node
    useEffect(() => {
@@ -91,7 +86,7 @@ function NodeForm({ selectedNodeId,  selectedLinkInfo, updateForm, onUpdateTree}
          
           console.log(diseaseNodeAlgorithm);
           if(diseaseNodeAlgorithm){
-            //use algorithmid
+            //use algorithmid of testA
             const selectedAlgorithm = diseaseNodeAlgorithm.algorithms.find((algorithm:any) => algorithm.id === selectedNodeId[0]); 
             if(selectedAlgorithm){
               console.log(selectedAlgorithm);
