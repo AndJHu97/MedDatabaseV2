@@ -1,11 +1,11 @@
 //import { Form, FormControl, FormGroup, FormLabel, Button } from 'react-bootstrap';
 //~ to update or delete node
-import React, { useEffect, useState} from "react";
+import React, { useEffect, useState } from "react";
 import NodeForm from "./NodeForm";
 import AlgorithmTree from "./AlgorithmTree";
 import NewDiseaseForm from "./NewDiseaseForm";
 import DiseaseDropdownSelection from "./Disease-Dropdown-Selection";
-import './custom-tree.css';
+import "./custom-tree.css";
 
 interface PreselectedInputs {
   id: number;
@@ -14,84 +14,122 @@ interface PreselectedInputs {
 }
 
 export default function VisualizeBackend() {
-  const [updateDiseaseDropdown, setUpdateDiseaseDropdown] = useState<boolean>(false);
-  const [selectedDisease, setSelectedDisease] = useState<PreselectedInputs | null>();
+  const [updateDiseaseDropdown, setUpdateDiseaseDropdown] =
+    useState<boolean>(false);
+  const [selectedDisease, setSelectedDisease] =
+    useState<PreselectedInputs | null>();
   //node: get the node ID and diseaseID to send to the nodeform
-  const [selectedNodeId, setSelectedNodeId] = useState<[number | null, number | null]>([null, null]);
+  const [selectedNodeId, setSelectedNodeId] = useState<
+    [number | null, number | null]
+  >([null, null]);
   //next step info to send
   //Nextstep sourceID, targetID, diseaseID
-  const [selectedLinkInfo, setSelectedLinkInfo] = useState<[number | null, number | null, number | null]>([null,null,null]);
+  const [selectedLinkInfo, setSelectedLinkInfo] = useState<
+    [number | null, number | null, number | null]
+  >([null, null, null]);
   const [updateTree, setUpdateTree] = useState<boolean>(false);
 
   // check whether updating form with node
   const [updateForm, setUpdateForm] = useState<boolean>(false);
-  
-   // Add event listener for key presses for update
-   useEffect(() => {
+
+  // Add event listener for key presses for update
+  useEffect(() => {
     const handleKeyPress = (event: KeyboardEvent) => {
-      if ((event.key === '~')) {
-       
-        setUpdateForm(prevUpdateForm => !prevUpdateForm);
+      if (event.key === "~") {
+        setUpdateForm((prevUpdateForm) => !prevUpdateForm);
         console.log("Updating value: ", updateForm);
       }
     };
-  
-  
 
-    window.addEventListener('keydown', handleKeyPress);
+    window.addEventListener("keydown", handleKeyPress);
 
     // Cleanup event listener on component unmount
     return () => {
-      window.removeEventListener('keydown', handleKeyPress);
+      window.removeEventListener("keydown", handleKeyPress);
     };
   }, []);
 
-  
-
   const onUpdateTree = () => {
-    setUpdateTree(prevUpdateTree => !prevUpdateTree);
-  }
+    setUpdateTree((prevUpdateTree) => !prevUpdateTree);
+  };
 
-  const handleTreeStateChange = (newState: { selectedNodeId: [number | null, number | null]; selectedLinkInfo: [number | null, number | null, number | null]; updateForm: boolean }) => {
-    if(newState.selectedNodeId){
+  const handleTreeStateChange = (newState: {
+    selectedNodeId: [number | null, number | null];
+    selectedLinkInfo: [number | null, number | null, number | null];
+    updateForm: boolean;
+  }) => {
+    if (newState.selectedNodeId) {
       setSelectedNodeId(newState.selectedNodeId);
     }
 
-    if(newState.selectedLinkInfo){
+    if (newState.selectedLinkInfo) {
       setSelectedLinkInfo(newState.selectedLinkInfo);
     }
 
-    if(newState.updateForm != undefined || newState.updateForm != null){
+    if (newState.updateForm != undefined || newState.updateForm != null) {
       setUpdateForm(newState.updateForm);
     }
-  }
+  };
 
   //NewDiseaseForm: Add disease and update the selection
-  const handleNewDiseaseAdded = () =>{
-    setUpdateDiseaseDropdown(prevUpdateDiseaseDropdown => !prevUpdateDiseaseDropdown);
-  }
+  const handleNewDiseaseAdded = () => {
+    setUpdateDiseaseDropdown(
+      (prevUpdateDiseaseDropdown) => !prevUpdateDiseaseDropdown
+    );
+  };
 
   //get disease change from Disease-Dropdown-Selection
-  const handleDiseaseSelectionChange = (newSelectedDisease: PreselectedInputs | undefined) =>{
-    if(newSelectedDisease){
+  const handleDiseaseSelectionChange = (
+    newSelectedDisease: PreselectedInputs | undefined
+  ) => {
+    if (newSelectedDisease) {
       setSelectedDisease(newSelectedDisease);
     }
-  }
-
+  };
 
   return (
     //make add disease a separate form
-      <div style={{ display: "flex", flexDirection: "column", alignItems: "center", width: "100%", height: "100%" }}>
-      <NewDiseaseForm onNewDiseaseAdded={handleNewDiseaseAdded}/>
+    <div
+      style={{
+        display: "flex",
+        flexDirection: "column",
+        alignItems: "center",
+        width: "100%",
+        height: "100%",
+      }}
+    >
+      <NewDiseaseForm onNewDiseaseAdded={handleNewDiseaseAdded} />
 
-      <DiseaseDropdownSelection onDiseaseSelectionChange={handleDiseaseSelectionChange} onUpdate = {updateDiseaseDropdown}/>
+      <DiseaseDropdownSelection
+        onDiseaseSelectionChange={handleDiseaseSelectionChange}
+        onUpdate={updateDiseaseDropdown}
+      />
 
-      <div id="treeWrapper" style={{ width: "70%", height: "400px" }}>
-      <AlgorithmTree selectedDisease={selectedDisease || null} updateTree = {updateTree} onStateChange={handleTreeStateChange}/>
+      <div
+        style={{
+          display: "flex",
+          flexDirection: "row",
+          alignItems: "center",
+          width: "100%",
+          height: "100%",
+        }}
+      >
+        <div id="treeWrapper" style={{ width: "50%", height: "100%" }}>
+          <AlgorithmTree
+            selectedDisease={selectedDisease || null}
+            updateTree={updateTree}
+            onStateChange={handleTreeStateChange}
+          />
+        </div>
+
+        <NodeForm
+          selectedNodeId={selectedNodeId}
+          selectedLinkInfo={selectedLinkInfo}
+          updateForm={updateForm}
+          onUpdateTree={onUpdateTree}
+        />
       </div>
-      <NodeForm selectedNodeId={selectedNodeId}  selectedLinkInfo={selectedLinkInfo} updateForm = {updateForm} onUpdateTree={onUpdateTree}/>
-  
-  </div>
+    </div>
   );
 }
 
