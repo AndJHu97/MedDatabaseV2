@@ -197,9 +197,9 @@ function NodeForm({ selectedNodeId,  selectedLinkInfo, updateForm, onUpdateTree}
   };
 
   const handleUpdateLinkClick = async () => {
-    const {ConditionsForNextStep, Symptom, NSExamType: ExamType} = formData;
+    const {NSName: Name, ConditionsForNextStep, Symptom, NSExamType: ExamType} = formData;
     const updatedLinkInfo = {
-      ConditionsForNextStep, Symptom, ExamType,
+      Name, ConditionsForNextStep, Symptom, ExamType,
       "selectedLinkId": selectedLinkId
     }
     
@@ -216,9 +216,9 @@ function NodeForm({ selectedNodeId,  selectedLinkInfo, updateForm, onUpdateTree}
    };
  
    const handleUpdateNodeClick = async () => {
-    const {TestName: Name, Notes, Triggers} = formData;
+    const {TestName: Name, Notes, Triggers,  DAExamType: ExamType, Diagnosis} = formData;
     const updatedNodeInfo = {
-      Name, Notes, Triggers, 
+      Name, Notes, Triggers, ExamType, Diagnosis,
       "selectedNodeId": selectedNodeId[0]};
     try{
       const updatedNodeInfoJSON = JSON.stringify(updatedNodeInfo);

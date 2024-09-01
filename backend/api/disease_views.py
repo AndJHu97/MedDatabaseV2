@@ -62,6 +62,9 @@ def GetAndPostDiseaseAlgorithmDataForForm(request):
         if request.data.get('DAExamType'):
             diseaseAlgorithm_data['ExamType'] = request.data.get('DAExamType')
 
+        if request.data.get('Diagnosis'):
+            diseaseAlgorithm_data['Diagnosis'] = request.data.get('Diagnosis')
+
         diseaseAlgorithmSerializer = DiseaseAlgorithmSerializer(data = diseaseAlgorithm_data)
         if diseaseAlgorithmSerializer.is_valid():
             diseaseAlgorithm = diseaseAlgorithmSerializer.save()
@@ -131,40 +134,60 @@ def Post_Initial_DiseaseAlgorithmNode(request):
 @api_view(['POST'])
 def updateNode(request):
     if request.method == 'POST':
-        #Get data
+        # Get data
         updateNodeId = int(request.data.get('selectedNodeId'))
         print("updated node Id: ", updateNodeId)
-        #Find model of interest
-        updateNodeObj = DiseaseAlgorithm.objects.get(pk = updateNodeId)
-        #Update model
-        if updateNodeObj:
-            updateNodeObj.Name = request.data.get('Name')
-            updateNodeObj.Notes = request.data.get('Notes')
-            updateNodeObj.Triggers.set(request.data.get('Triggers'))
-            updateNodeObj.save()
-            # Serialize the updated object
-            serializer = DiseaseAlgorithmSerializer(updateNodeObj)
-
-            print(f"Symptom of DiseaseAlgorithm with id={updateNodeObj.id} updated successfully")
-        else: 
-            return Response(updateNodeObj.errors, status=400)
         
-        return Response({
-                'disease_algorithm': serializer.data
-            }, status=201)
+        # Find model of interest
+        try:
+            updateNodeObj = DiseaseAlgorithm.objects.get(pk=updateNodeId)
+        except DiseaseAlgorithm.DoesNotExist:
+            return Response({"error": "DiseaseAlgorithm not found."}, status=404)
+        
+        # Update model
+        updateNodeObj.Name = request.data.get('Name')
+        updateNodeObj.Notes = request.data.get('Notes')
+        
+        # Update Triggers (Many-to-Many relationship)
+        if 'Triggers' in request.data:
+            updateNodeObj.Triggers.set(request.data.get('Triggers'))
+        
+        # Update ExamType (ForeignKey relationship)
+        exam_type_id = request.data.get('ExamType')
+        if exam_type_id:
+            try:
+                exam_type = ExamType.objects.get(pk=exam_type_id)
+                updateNodeObj.ExamType = exam_type
+            except ExamType.DoesNotExist:
+                return Response({"error": "ExamType not found."}, status=404)
+        
+        # Update Diagnosis (ForeignKey relationship)
+        diagnosis_id = request.data.get('Diagnosis')
+        if diagnosis_id:
+            try:
+                diagnosis = Diagnosis.objects.get(pk=diagnosis_id)
+                updateNodeObj.Diagnosis = diagnosis
+            except Diagnosis.DoesNotExist:
+                return Response({"error": "Diagnosis not found."}, status=404)
+
+        updateNodeObj.save()
+        
+        # Serialize the updated object
+        serializer = DiseaseAlgorithmSerializer(updateNodeObj)
+        return Response(serializer.data, status=200)
 
 #passes link parameters and the id of the link
 @api_view(['POST'])
 def updateLink(request):
     if request.method == 'POST':
         #Get data
-        print("selected link Id: ", request.data.get('selectedLinkId'))
         updateLinkId = int(request.data.get('selectedLinkId'))
         #Find model of interest
         updateLinkObj = NextStep.objects.get(pk = updateLinkId)
         #Update model
         if updateLinkObj:
             updateLinkObj.ConditionsForNextStep = request.data.get('ConditionsForNextStep')
+            updateLinkObj.NextStepName = request.data.get('Name')
              # Handle Symptom update
             symptom_id = request.data.get('Symptom')
             if symptom_id:
