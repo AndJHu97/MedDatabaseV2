@@ -43,6 +43,10 @@ class NextStep(models.Model):
     Symptom = models.ForeignKey('Symptoms', on_delete=models.CASCADE, null=True, blank = True)
     ExamType = models.ForeignKey('ExamType', on_delete=models.CASCADE, null=True)
 
+class Diagnosis(models.Model):
+    Name = models.CharField(max_length=255, null=True, blank = True)
+
+
 class DiseaseAlgorithm(models.Model):
     Name = models.CharField(max_length=255, null=True, blank = True)
     Disease = models.ForeignKey('Disease', on_delete=models.CASCADE, null=True, blank = True)
@@ -51,6 +55,8 @@ class DiseaseAlgorithm(models.Model):
     Triggers = models.ManyToManyField(TriggerChecklistItem, related_name='disease_algorithm', null = True, blank = True)
     NextSteps = models.ManyToManyField(NextStep, related_name = "disease_algorithm", null = True, blank = True)
     ExamType = models.ForeignKey('ExamType', on_delete=models.CASCADE, null=True, blank = True)
+    Diagnosis = models.ForeignKey(Diagnosis, on_delete=models.SET_NULL, null=True, blank=True)
+
 
 class Vitals(models.Model):
     Name = models.CharField(max_length=255, null=True)

@@ -1,8 +1,8 @@
 from rest_framework.response import Response
 from django.http import JsonResponse
 from rest_framework.decorators import api_view
-from main.models import Disease, DiseaseAlgorithm, TriggerChecklistItem, Symptoms, ExamType, NextStep, Symptoms
-from .serializers import DiseaseSerializer, DiseaseAlgorithmSerializer, NextStepsSerializer, SymptomsSerializer, ExamTypeSerializer, TriggerChecklistItemSerializer
+from main.models import Disease, DiseaseAlgorithm, TriggerChecklistItem, Symptoms, ExamType, NextStep, Symptoms, Diagnosis
+from .serializers import DiseaseSerializer, DiseaseAlgorithmSerializer, NextStepsSerializer, SymptomsSerializer, ExamTypeSerializer, TriggerChecklistItemSerializer, DiagnosisSerializer
 from django.views.decorators.csrf import csrf_exempt
 from django.shortcuts import get_object_or_404
 import json
@@ -38,13 +38,16 @@ def GetAndPostDiseaseAlgorithmDataForForm(request):
         symptoms = Symptoms.objects.all()
         examTypes = ExamType.objects.all()
         trigger = TriggerChecklistItem.objects.all()
+        diagnosis = Diagnosis.objects.all()
+        diagnosisSerializer = DiagnosisSerializer(diagnosis, many = True)
         triggerSerializer = TriggerChecklistItemSerializer(trigger, many = True)
         examTypeSerializer = ExamTypeSerializer(examTypes, many = True)
         symptomSerializer = SymptomsSerializer(symptoms, many = True)
         formData = {
             'symptoms': symptomSerializer.data,
             'examTypes': examTypeSerializer.data,
-            "trigger": triggerSerializer.data
+            "trigger": triggerSerializer.data,
+            'diagnosis': diagnosisSerializer.data
         }
         return Response(formData)
     elif request.method == 'POST':
