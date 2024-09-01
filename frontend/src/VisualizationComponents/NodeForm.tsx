@@ -23,6 +23,7 @@ function NodeForm({ selectedNodeId,  selectedLinkInfo, updateForm, onUpdateTree}
     Triggers: '',
     SelectedNodeId: '',
     DiseaseId: '',
+    Diagnosis:'',
     //DA: DiseaseAlgorithm
     DAExamType: ''
   });
@@ -43,6 +44,7 @@ function NodeForm({ selectedNodeId,  selectedLinkInfo, updateForm, onUpdateTree}
   const [newSymptom, setNewSymptom] = useState('');
   const [examTypes, setExamTypes] = useState<PreselectedInputs[]>([]);
   const [triggers, setTrigger] = useState<PreselectedInputs[]>([]);
+  const [diagnosis, setDiagnosis] = useState<PreselectedInputs[]>([]);
   //modal for inputting new symptoms
   const [showNewSymptomForm, setShowNewSymptomForm] = useState(false);
  
@@ -54,6 +56,7 @@ function NodeForm({ selectedNodeId,  selectedLinkInfo, updateForm, onUpdateTree}
         setSymptoms(response.data.symptoms);
         setExamTypes(response.data.examTypes);
         setTrigger(response.data.trigger);
+        setDiagnosis(response.data.diagnosis)
       } catch (error) {
         console.error("Error fetching dropdown:", error);
       }
@@ -91,13 +94,14 @@ function NodeForm({ selectedNodeId,  selectedLinkInfo, updateForm, onUpdateTree}
             if(selectedAlgorithm){
               console.log(selectedAlgorithm);
               console.log("updating form");
-              //update form
+              //update node
               setFormData({
                 ...formData,
                 TestName: selectedAlgorithm.Name,
                 Notes: selectedAlgorithm.Notes,
                 Triggers: selectedAlgorithm.Triggers.join(', '), // Convert array to comma-separated string,
-                DAExamType: selectedAlgorithm.ExamType
+                Diagnosis: selectedAlgorithm.Diagnosis,
+                DAExamType: selectedAlgorithm.ExamType,
               });
             }else{
               console.log("No algorithm found when updating form");
@@ -154,6 +158,7 @@ function NodeForm({ selectedNodeId,  selectedLinkInfo, updateForm, onUpdateTree}
           TestName: '',
           Notes:'',
           Triggers: '',
+          Diagnosis: '',
           //DA: DiseaseAlgorithm
           DAExamType: ''
         }));
@@ -374,6 +379,23 @@ function NodeForm({ selectedNodeId,  selectedLinkInfo, updateForm, onUpdateTree}
           {examTypes.map((examType) => (
             <option key={examType.id} value={examType.id}>
               {examType.Name}
+            </option>
+          ))}
+        </select>
+      </div>
+      <div className="mb-3">
+        <label htmlFor="diagnosis" className="form-label">Diagnosis Result:</label>
+        <select
+          className="form-control"
+          id="Diagnosis"
+          name="Diagnosis"
+          value={formData.Diagnosis}
+          onChange={handleSelectChange}
+        >
+          <option value="">Select A Diagnosis</option>
+          {diagnosis.map((dx) => (
+            <option key={dx.id} value={dx.id}>
+              {dx.Name}
             </option>
           ))}
         </select>
