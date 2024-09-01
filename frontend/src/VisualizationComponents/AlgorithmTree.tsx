@@ -18,6 +18,7 @@ interface Algorithm {
   Disease: number;
   ExamType: number;
   Triggers: any[]; // Update with appropriate type if known
+  Diagnosis: number;
   NextSteps: NextStep[];
 }
 
@@ -127,46 +128,58 @@ export default function AlgorithmTree({
   }, [tree]); // Re-run this effect whenever the tree updates
 
   const handleTreeNodeClick = (nodeDatum: TreeNodeDatum) => {
-    //erases link info because not updating that anymore
-    setSelectedLinkInfo([null, null, null]);
-    setUpdateForm(false);
-    setSelectedNodeId([
+     // Erase link info because not updating that anymore
+    const updatedLinkInfo: [null, null, null] = [null, null, null];
+    const updatedNodeId: [number | null, number | null] = [
       parseInt(nodeDatum.attributes?.id as string) ?? null,
       parseInt(nodeDatum.attributes?.diseaseId as string) ?? null,
-    ]);
-    console.log(
-      "Node ID:",
-      parseInt(nodeDatum.attributes?.id as string) ?? null
-    );
+    ];
+
+    // Update states with the new values
+    setSelectedLinkInfo(updatedLinkInfo);
+    setUpdateForm(false);
+    setSelectedNodeId(updatedNodeId);
+
+    console.log("Node ID:", updatedNodeId[0]);
+
+    // Immediately use the updated state values
     onStateChange({
-      selectedNodeId: selectedNodeId,
-      selectedLinkInfo: selectedLinkInfo,
-      updateForm: updateForm,
+      selectedNodeId: updatedNodeId,
+      selectedLinkInfo: updatedLinkInfo,
+      updateForm: false,
     });
   };
 
   // Link click
-  const handleLinkClick = (
-    sourceNode: TreeNodeDatum,
-    targetNode: TreeNodeDatum
-  ) => {
-    //erase node info
-    setSelectedNodeId([null, null]);
-    setUpdateForm(false);
-    setSelectedLinkInfo([
-      parseInt(sourceNode.attributes?.id as string),
-      parseInt(targetNode.attributes?.id as string),
-      parseInt(sourceNode.attributes?.diseaseId as string) ?? null,
-    ]);
-    console.log(selectedLinkInfo);
-    console.log("Source node name:", sourceNode.name);
-    console.log("Target node name:", targetNode.name);
-    onStateChange({
-      selectedNodeId: selectedNodeId,
-      selectedLinkInfo: selectedLinkInfo,
-      updateForm: updateForm,
-    });
-  };
+const handleLinkClick = (
+  sourceNode: TreeNodeDatum,
+  targetNode: TreeNodeDatum
+) => {
+  // Erase node info
+  const updatedNodeId: [null, null] = [null, null];
+  const updatedLinkInfo: [number | null, number | null, number | null] = [
+    parseInt(sourceNode.attributes?.id as string) ?? null,
+    parseInt(targetNode.attributes?.id as string) ?? null,
+    parseInt(sourceNode.attributes?.diseaseId as string) ?? null,
+  ];
+
+  // Update states with the new values
+  setSelectedNodeId(updatedNodeId);
+  setUpdateForm(false);
+  setSelectedLinkInfo(updatedLinkInfo);
+
+  console.log(updatedLinkInfo);
+  console.log("Source node name:", sourceNode.name);
+  console.log("Target node name:", targetNode.name);
+
+  // Immediately use the updated state values
+  onStateChange({
+    selectedNodeId: updatedNodeId,
+    selectedLinkInfo: updatedLinkInfo,
+    updateForm: false,
+  });
+};
+
 
   return (
     // `<Tree />` will fill width/height of its container; in this case `#treeWrapper`
@@ -254,6 +267,7 @@ function DFSRecursive(
             name: childNode.Name,
             attributes: {
               "Decision Picked": condition!,
+              "Diagnosis Status": childNode.Diagnosis!,
               id: childNode.id,
               diseaseId: childNode.Disease,
             },

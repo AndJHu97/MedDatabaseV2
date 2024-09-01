@@ -22,6 +22,7 @@ interface Node {
     Disease: number;
     ExamType: number;
     Triggers: any[]; // Update with appropriate type if known
+    Diagnosis: number;
     NextSteps: NextStep[];
   }
 
