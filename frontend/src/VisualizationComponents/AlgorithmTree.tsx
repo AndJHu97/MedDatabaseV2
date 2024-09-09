@@ -134,7 +134,6 @@ export default function AlgorithmTree({
       parseInt(nodeDatum.attributes?.id as string) ?? null,
       parseInt(nodeDatum.attributes?.diseaseId as string) ?? null,
     ];
-
     // Update states with the new values
     setSelectedLinkInfo(updatedLinkInfo);
     setUpdateForm(false);
@@ -268,8 +267,8 @@ function DFSRecursive(
             attributes: {
               "Decision Picked": condition!,
               "Diagnosis Status": childNode.Diagnosis!,
-              id: childNode.id,
               diseaseId: childNode.Disease,
+              id: childNode.id,
             },
           };
 
