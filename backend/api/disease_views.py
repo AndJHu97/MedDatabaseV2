@@ -52,38 +52,52 @@ def GetAndPostDiseaseAlgorithmDataForForm(request):
         return Response(formData)
     elif request.method == 'POST':
 
-        #DiseaseAlgorithm save
-        diseaseAlgorithm_data = {
-            'Name': request.data.get('TestName'),
-            'Notes': request.data.get('Notes', ''),
-            'Disease': request.data.get('DiseaseId')
-        }
-
-        if request.data.get('DAExamType'):
-            diseaseAlgorithm_data['ExamType'] = request.data.get('DAExamType')
-
-        if request.data.get('Diagnosis'):
-            diseaseAlgorithm_data['Diagnosis'] = request.data.get('Diagnosis')
-
-        diseaseAlgorithmSerializer = DiseaseAlgorithmSerializer(data = diseaseAlgorithm_data)
-        if diseaseAlgorithmSerializer.is_valid():
-            diseaseAlgorithm = diseaseAlgorithmSerializer.save()
-             #Add trigger separately because foreign ID
-            triggers = request.data.get('Triggers', '')
-            if triggers:  # Check if triggers is not empty
-                trigger = TriggerChecklistItem.objects.get(id=triggers)
-                diseaseAlgorithm.Triggers.add(trigger)
-                diseaseAlgorithm.save()
-            
+        new_disease_key = -1
+        #if you want to connect a link to an existing disease algorithm (like 2 links to same node)
+        if(request.data.get('TestName')[:4] == '-id:'):
+            new_disease_key = request.data.get('TestName')[5:]
+            try:
+                diseaseAlgorithm = DiseaseAlgorithm.objects.get(id=new_disease_key)
+            except DiseaseAlgorithm.DoesNotExist:
+                print(f"DiseaseAlgorithm with id {new_disease_key} does not exist.")
         else:
-            return Response(diseaseAlgorithmSerializer.errors, status=400)
+            #DiseaseAlgorithm save
+            diseaseAlgorithm_data = {
+                'Name': request.data.get('TestName'),
+                'Notes': request.data.get('Notes', ''),
+                'Disease': request.data.get('DiseaseId')
+            }
+
+            if request.data.get('DAExamType'):
+                diseaseAlgorithm_data['ExamType'] = request.data.get('DAExamType')
+
+            if request.data.get('Diagnosis'):
+                diseaseAlgorithm_data['Diagnosis'] = request.data.get('Diagnosis')
+
+            diseaseAlgorithmSerializer = DiseaseAlgorithmSerializer(data = diseaseAlgorithm_data)
+            if diseaseAlgorithmSerializer.is_valid():
+                diseaseAlgorithm = diseaseAlgorithmSerializer.save()
+                #Add trigger separately because foreign ID
+                triggers = request.data.get('Triggers', '')
+                if triggers:  # Check if triggers is not empty
+                    trigger = TriggerChecklistItem.objects.get(id=triggers)
+                    diseaseAlgorithm.Triggers.add(trigger)
+                    diseaseAlgorithm.save()
+            else:
+                return Response(diseaseAlgorithmSerializer.errors, status=400)
         
         #Saving nextStep
         nextStep_data = {
             'NextStepName': request.data.get('NSName'),
             'ConditionsForNextStep': request.data.get('ConditionsForNextStep'),
-            'NextStepDiseaseAlgorithm': diseaseAlgorithm.id
+            'NextStepDiseaseAlgorithm': ''
         }
+
+        #override the next node if you manually input the next node
+        if new_disease_key != -1:
+            nextStep_data['NextStepDiseaseAlgorithm'] = new_disease_key
+        else:
+            nextStep_data['NextStepDiseaseAlgorithm'] = diseaseAlgorithm.id
         #in case these are null
         if request.data.get('Symptom'):
             nextStep_data['Symptom'] = request.data.get('Symptom')
