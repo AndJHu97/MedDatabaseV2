@@ -69,7 +69,6 @@ export default function AlgorithmTree({
     name: "Root",
     children: [],
   });
-  console.log("Loading tree");
 
   //node: get the node ID and diseaseID to send to the nodeform
   const [selectedNodeId, setSelectedNodeId] = useState<

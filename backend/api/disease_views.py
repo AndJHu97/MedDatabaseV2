@@ -121,7 +121,7 @@ def GetAndPostDiseaseAlgorithmDataForForm(request):
 
         return Response({
                 'next_step': nextStepSerializer.data,
-                'disease_algorithm': diseaseAlgorithmSerializer.data
+                #'disease_algorithm': diseaseAlgorithmSerializer.data
             }, status=201)
 
 #If disease has no nodes, this adds the first one
