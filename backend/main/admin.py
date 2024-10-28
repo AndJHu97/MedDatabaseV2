@@ -1,7 +1,7 @@
 from django.contrib import admin
 from django.db import models
 # Register your models here.
-from .models import Diagnosis, NextStep, Symptoms, SelectionType, TriggerChecklistItem, DiseaseAlgorithm, Vitals, TestAssessment, TestWorkup, HistoryWorkup, VitalsWorkup, Test, History, VitalsManagement, HistoryAssessment, PEManagement, PE, DiseaseAssessment, Management, Disease, TestManagement, PEWorkup, ExamType, PEAssessment, HistoryManagement, VitalsAssessment
+from .models import Diagnosis, NextStep, Symptoms, SelectionType, TriggerChecklist, DiseaseAlgorithm, Vitals, TestAssessment, TestWorkup, HistoryWorkup, VitalsWorkup, Test, History, VitalsManagement, HistoryAssessment, PEManagement, PE, DiseaseAssessment, Management, Disease, TestManagement, PEWorkup, ExamType, PEAssessment, HistoryManagement, VitalsAssessment
 
 admin.site.register(Diagnosis)
 admin.site.register(ExamType)
@@ -17,7 +17,7 @@ admin.site.register(VitalsAssessment)
 admin.site.register(VitalsManagement)
 
 admin.site.register(SelectionType)
-admin.site.register(TriggerChecklistItem)
+admin.site.register(TriggerChecklist)
 admin.site.register(Test)
 admin.site.register(TestWorkup)
 admin.site.register(TestAssessment)

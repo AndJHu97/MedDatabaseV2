@@ -11,4 +11,5 @@ urlpatterns = [
     path('add_symptom/', disease_views.add_symptom, name = "AddSymptom"),
     path('add_disease/', disease_views.add_disease, name = "AddDisease"),
     path('addFirstNode/', disease_views.Post_Initial_DiseaseAlgorithmNode, name = "AddFirstNode"),
+    #can add more trigger api here
 ]
