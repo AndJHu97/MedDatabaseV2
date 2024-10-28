@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from main.models import Disease, Diagnosis, DiseaseAlgorithm, NextStep, TriggerChecklistItem, Symptoms, ExamType
+from main.models import Disease, Diagnosis, DiseaseAlgorithm, NextStep, TriggerChecklist, Symptoms, ExamType, SelectionType
 
 class DiagnosisSerializer(serializers.ModelSerializer):
     class Meta:
@@ -21,9 +21,14 @@ class NextStepsSerializer(serializers.ModelSerializer):
         model = NextStep
         fields = '__all__'
 
-class TriggerChecklistItemSerializer(serializers.ModelSerializer):
+class TriggerChecklistSerializer(serializers.ModelSerializer):
     class Meta:
-        model = TriggerChecklistItem
+        model = TriggerChecklist
+        fields = '__all__'
+
+class SelectionTypeSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = SelectionType
         fields = '__all__'
 
 class SymptomsSerializer(serializers.ModelSerializer):

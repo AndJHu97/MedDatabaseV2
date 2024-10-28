@@ -5,7 +5,7 @@ import VisualizationMain from '../VisualizationComponents/VisualizationMain'
 
 interface SymptomFormProps {}
 
-const SymptomForm: React.FC<SymptomFormProps> = () => {
+const visualizeBackend: React.FC<SymptomFormProps> = () => {
  
 
 
@@ -14,4 +14,4 @@ const SymptomForm: React.FC<SymptomFormProps> = () => {
   );
 };
 
-export default SymptomForm;
+export default visualizeBackend;

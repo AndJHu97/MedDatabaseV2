@@ -32,7 +32,7 @@ export default function DiseaseDropdownSelection({onDiseaseSelectionChange, onUp
     };
     return(
         <div className="mb-3">
-        <label htmlFor="diseaseSelect" className="form-label">Select Disease Tree:</label>
+        <label htmlFor="diseaseSelect" className="form-label">Select Disease:</label>
         <select
           className="form-control"
           id="diseaseAlg"

@@ -21,5 +21,6 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('', include('main.urls')),
     path('', include('visualizeBackend.urls')),
-    path('api/', include('api.urls'))
+    path('api/', include('api.disease_urls')),
+    path('api/trigger/', include('api.trigger_urls'))
 ]

@@ -5,6 +5,7 @@ import {
   RouterProvider,
 } from "react-router-dom";
 import VisualizeBackend from './Pages/VisualizeBackend';
+import VisualizeTrigger from './Pages/Triggers'
 import Main from './Pages/Main';
 
 const router = createBrowserRouter([
@@ -16,6 +17,11 @@ const router = createBrowserRouter([
   {
     path: "visualizeBackend",
     element: <VisualizeBackend />
+  },
+
+  {
+    path: "visualizeBackend/trigger",
+    element: <VisualizeTrigger />
   }
 ]);
 
