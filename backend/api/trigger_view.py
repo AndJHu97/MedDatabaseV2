@@ -21,3 +21,34 @@ def showSymptoms(request):
         symptomsSerializer = SymptomsSerializer(symptoms, many = True)
         return Response(symptomsSerializer.data)
 
+@api_view(['POST'])
+def PostTriggerForm(request):
+    if request.method == 'POST':
+        print(request.data)  # Log request data for debugging
+
+        symptom_ids = request.data.get('SelectedSymptomsIDs', [])
+        symptoms = Symptoms.objects.filter(id__in=symptom_ids)
+
+        selectionType_id = request.data.get('SelectionTypeID')
+        selectionType = SelectionType.objects.get(id=selectionType_id)
+
+        triggerForm_data = {
+            'Name': request.data.get('Name'),
+            'Group': request.data.get('Group'),
+            'ChecklistLogic': request.data.get('ChecklistLogicInfo'),
+            'SelectionAdditionalInfo': request.data.get('SelectionAdditionalInfo'),
+            'SelectionType': selectionType.id,
+        }
+
+        triggerChecklistSerializer = TriggerChecklistSerializer(data=triggerForm_data)
+        if triggerChecklistSerializer.is_valid():
+            triggerForm = triggerChecklistSerializer.save()
+            # Save the Many-to-Many field
+            triggerForm.SymptomItems.set(symptoms)
+            return Response(triggerChecklistSerializer.data, status=201)
+        else:
+            print(triggerChecklistSerializer.errors)
+            return Response(triggerChecklistSerializer.errors, status=400)
+
+
+

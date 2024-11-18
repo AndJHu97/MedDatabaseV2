@@ -33,14 +33,18 @@ export default function TriggerMain() {
     Name: string;
     Group: string;
     SelectedSymptoms: SelectedSymptom[]; // Each symptom with its type
-    SelectionType: string;
+    SelectedSymptomsIDs: number[];
+    SelectionTypeID: number | null;
     SelectionAdditionalInfo: string;
+    ChecklistLogicInfo: string;
   }>({
     Name: '',
     Group: '',
     SelectedSymptoms: [],
-    SelectionType: '',
-    SelectionAdditionalInfo: ''
+    SelectedSymptomsIDs:[],
+    SelectionTypeID: null,
+    SelectionAdditionalInfo: '',
+    ChecklistLogicInfo: ''
   });
 
   const [symptoms, setSymptoms] = useState<Symptom[]>([]);
@@ -67,19 +71,25 @@ export default function TriggerMain() {
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
     
-    // Special handling for each element type if needed
-    if (name === "SelectionType") {
+     // Generate new ChecklistLogicInfo based on updated form data
+     
+
+    if (name === "SelectionTypeID") {
+      const selectedId = parseInt(value);
       setFormData((prevState) => ({
         ...prevState,
-        [name]: value, // This is a single string value
+        SelectionTypeID: selectedId, // Store the ID, not the Name
       }));
-    } else {
+    } else{
+      const updatedChecklistLogicInfo = generateChecklistLogicInfo(formData.SelectedSymptoms);
       setFormData((prevState) => ({
         ...prevState,
         [name]: value,
+        ChecklistLogicInfo: updatedChecklistLogicInfo
       }));
     }
   };
+  
   
 
   const handleSymptomSelectionChange = (index: number, e: React.ChangeEvent<HTMLSelectElement>) => {
@@ -87,15 +97,22 @@ export default function TriggerMain() {
     const selectedSymptom = symptoms.find(symptom => symptom.id === selectedSymptomId);
     
     if (selectedSymptom) {
+      //the current array of symptom id
       const updatedSymptoms = [...formData.SelectedSymptoms];
       updatedSymptoms[index] = {
         ...selectedSymptom,
         selectionType: "Positive", // Default to Positive or leave blank
       };
 
+      //save without the selectionType to make things easier for backend processing (just return the array of ids)
+      const updatedSymptomsIDs = [...formData.SelectedSymptomsIDs];
+      updatedSymptomsIDs[index] = selectedSymptomId;
+      const updatedChecklistLogicInfo = generateChecklistLogicInfo(updatedSymptoms);
       setFormData((prevState) => ({
         ...prevState,
         SelectedSymptoms: updatedSymptoms,
+        SelectedSymptomsIDs: updatedSymptomsIDs,
+        ChecklistLogicInfo: updatedChecklistLogicInfo
       }));
     }
   };
@@ -103,30 +120,34 @@ export default function TriggerMain() {
   const handleSelectionTypeChange = (index: number, selectionType: string) => {
     const updatedSymptoms = [...formData.SelectedSymptoms];
     updatedSymptoms[index].selectionType = selectionType;
+    const updatedChecklistLogicInfo = generateChecklistLogicInfo(updatedSymptoms);
 
     setFormData((prevState) => ({
       ...prevState,
       SelectedSymptoms: updatedSymptoms,
+      ChecklistLogicInfo: updatedChecklistLogicInfo
     }));
   };
 
   const addSymptomSelection = () => {
     const updatedSymptoms = [...formData.SelectedSymptoms, { id: 0, Name: '', selectionType: "Positive" }];
+    const updatedChecklistLogicInfo = generateChecklistLogicInfo(updatedSymptoms);
     setFormData((prevState) => ({
       ...prevState,
       SelectedSymptoms: updatedSymptoms,
+      ChecklistLogicInfo: updatedChecklistLogicInfo
     }));
   };
 
-  const generateAdditionalInfo = () => {
-    return formData.SelectedSymptoms.map(symptom => {
+  const generateChecklistLogicInfo = (SelectedSymptoms: SelectedSymptom[]) => {
+    return SelectedSymptoms.map(symptom => {
       switch (symptom.selectionType) {
         case 'Positive':
           return `[(${symptom.id})], `;
         case 'Negative':
           return `![(${symptom.id})], `;
         case 'Mandatory Positive':
-          return `*[(${symptom.id})]*, `;
+          return `*[(${symptom.id})], `;
         case 'Mandatory Negative':
           return `!*[( ${symptom.id} )], `;
         default:
@@ -138,15 +159,17 @@ export default function TriggerMain() {
   // Handle form submission
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    axios.post('/api/trigger-checklist/', formData)
+    axios.post('http://localhost:8000/api/trigger/submitTriggerForm/', formData)
       .then(response => {
         console.log("Form submitted successfully:", response.data);
         setFormData({
           Name: '',
           Group: '',
           SelectedSymptoms: [],
-          SelectionType: '',
-          SelectionAdditionalInfo: ''
+          SelectedSymptomsIDs: [],
+          SelectionTypeID: null,
+          SelectionAdditionalInfo: '',
+          ChecklistLogicInfo: ''
         });
       })
       .catch(error => console.error(error));
@@ -252,34 +275,47 @@ export default function TriggerMain() {
 
         <div style={{ marginBottom: "15px" }}>
           <label>
+            Checklist Logic Info:
+            <textarea
+              name="ChecklistLogicInfo"
+              value={formData.ChecklistLogicInfo}
+              onChange={handleChange}
+              style={{ width: "100%", padding: "8px", marginTop: "5px", borderRadius: "4px", border: "1px solid #ccc" }}
+            />
+          </label>
+        </div>
+
+        <div style={{ marginBottom: "15px" }}>
+          <label>
             Selection Type:
             <select
-              name="SelectionType"
-              value={formData.SelectionType}
+              name="SelectionTypeID"
+              value={formData.SelectionTypeID || ''}
               onChange={handleChange}
               style={{ width: "100%", padding: "8px", marginTop: "5px", borderRadius: "4px", border: "1px solid #ccc" }}
             >
               <option value="">Select Type</option>
               {selectionTypes.map((selection) => (
-                <option key={selection.id} value={selection.Name}>
+                <option key={selection.id} value={selection.id}>
                   {selection.Name}
                 </option>
               ))}
             </select>
           </label>
         </div>
-
+        
         <div style={{ marginBottom: "15px" }}>
           <label>
-            Additional Info:
+            Selection Additional Info:
             <textarea
               name="SelectionAdditionalInfo"
-              value={generateAdditionalInfo()}
+              value={formData.SelectionAdditionalInfo}
               onChange={handleChange}
               style={{ width: "100%", padding: "8px", marginTop: "5px", borderRadius: "4px", border: "1px solid #ccc" }}
             />
           </label>
         </div>
+       
 
         <button
           type="submit"
