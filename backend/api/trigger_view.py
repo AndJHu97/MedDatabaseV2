@@ -24,20 +24,20 @@ def showSymptoms(request):
 @api_view(['POST'])
 def PostTriggerForm(request):
     if request.method == 'POST':
-        print(request.data)  # Log request data for debugging
+        print(request.data)  
 
+        #Get all the foreign IDs of symptoms
         symptom_ids = request.data.get('SelectedSymptomsIDs', [])
         symptoms = Symptoms.objects.filter(id__in=symptom_ids)
-
-        selectionType_id = request.data.get('SelectionTypeID')
-        selectionType = SelectionType.objects.get(id=selectionType_id)
 
         triggerForm_data = {
             'Name': request.data.get('Name'),
             'Group': request.data.get('Group'),
             'ChecklistLogic': request.data.get('ChecklistLogicInfo'),
             'SelectionAdditionalInfo': request.data.get('SelectionAdditionalInfo'),
-            'SelectionType': selectionType.id,
+            'SelectionType': request.data.get('SelectionTypeID'),
+            'Disease' : request.data.get('SelectedDiseaseId'),
+            'GeneralAdditionalInfo': request.data.get('GeneralAdditionalInfo')
         }
 
         triggerChecklistSerializer = TriggerChecklistSerializer(data=triggerForm_data)

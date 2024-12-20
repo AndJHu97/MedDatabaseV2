@@ -15,8 +15,10 @@ class TriggerChecklist(models.Model):
     ChecklistLogic = models.CharField(max_length=255, null=True)
     #Type of selection like all or nothing or need 3/5 of the symptoms or cannot be these
     SelectionType = models.ForeignKey('SelectionType', on_delete=models.CASCADE, null=True, blank = True)
-    SelectionAdditionalInfo = models.CharField(max_length=255, null=True)
-
+    SelectionAdditionalInfo = models.CharField(max_length=255, null=True, blank = True)
+    GeneralAdditionalInfo = models.CharField(max_length=255, null=True, blank = True)
+    Disease = models.ForeignKey('Disease', on_delete=models.CASCADE, null=True, blank = True)
+    
 class SelectionType(models.Model):
     Name = models.CharField(max_length=255, null=True)
 

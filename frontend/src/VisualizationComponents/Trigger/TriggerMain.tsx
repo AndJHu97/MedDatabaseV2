@@ -28,6 +28,18 @@ export default function TriggerMain() {
   const [selectedDisease, setSelectedDisease] = useState<PreselectedInputs | null>();
   const [updateDiseaseDropdown, setUpdateDiseaseDropdown] = useState<boolean>(false);
 
+  interface PreselectedInputs {
+    id: number;
+    Name: string;
+  }
+
+  //for adding new symptoms
+  const [addSymptoms, setAddSymptoms] = useState<PreselectedInputs[]>([]);
+
+
+  
+  const [newSymptom, setNewSymptom] = useState('');
+
   // Form values for the trigger form
   const [formData, setFormData] = useState<{
     Name: string;
@@ -37,6 +49,8 @@ export default function TriggerMain() {
     SelectionTypeID: number | null;
     SelectionAdditionalInfo: string;
     ChecklistLogicInfo: string;
+    SelectedDiseaseId: number | null;
+    GeneralAdditionalInfo: string;
   }>({
     Name: '',
     Group: '',
@@ -44,7 +58,9 @@ export default function TriggerMain() {
     SelectedSymptomsIDs:[],
     SelectionTypeID: null,
     SelectionAdditionalInfo: '',
-    ChecklistLogicInfo: ''
+    GeneralAdditionalInfo:'',
+    ChecklistLogicInfo: '',
+    SelectedDiseaseId: null
   });
 
   const [symptoms, setSymptoms] = useState<Symptom[]>([]);
@@ -63,9 +79,10 @@ export default function TriggerMain() {
 
   // Handle disease selection change
   const handleDiseaseSelectionChange = (newSelectedDisease: PreselectedInputs | undefined) => {
-    if (newSelectedDisease) {
-      setSelectedDisease(newSelectedDisease);
-    }
+    setFormData((prevState) => ({
+      ...prevState,
+      SelectedDiseaseId: newSelectedDisease ? newSelectedDisease.id : null,
+    }));
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
@@ -156,6 +173,31 @@ export default function TriggerMain() {
     }).join("\n");
   };
 
+  const removeSymptom = (index: number) => {
+    const updatedSymptoms = formData.SelectedSymptoms.filter((_, i) => i !== index);
+    const updatedSymptomsIDs = updatedSymptoms.map(symptom => symptom.id);
+    const updatedChecklistLogicInfo = generateChecklistLogicInfo(updatedSymptoms);
+    setFormData((prevState) => ({
+      ...prevState,
+      SelectedSymptoms: updatedSymptoms,
+      SelectedSymptomsIDs: updatedSymptomsIDs,
+      ChecklistLogicInfo: updatedChecklistLogicInfo
+    }));
+  };
+
+  //modal for inputting new symptoms
+  const [showNewSymptomForm, setShowNewSymptomForm] = useState(false);
+  const handleAddSymptom = async () => {
+    try {
+      const response = await axios.post('http://localhost:8000/api/add_symptom/', { name: newSymptom });
+      setAddSymptoms([...symptoms, response.data]);
+      setNewSymptom('');
+      setShowNewSymptomForm(false);
+    } catch (error) {
+      console.error('Error adding symptom:', error);
+    }
+  };
+
   // Handle form submission
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -169,7 +211,9 @@ export default function TriggerMain() {
           SelectedSymptomsIDs: [],
           SelectionTypeID: null,
           SelectionAdditionalInfo: '',
-          ChecklistLogicInfo: ''
+          GeneralAdditionalInfo: '',
+          ChecklistLogicInfo: '',
+          SelectedDiseaseId: null
         });
       })
       .catch(error => console.error(error));
@@ -261,6 +305,13 @@ export default function TriggerMain() {
                     Mandatory Negative
                   </label>
                 </div>
+                <button
+                  type="button"
+                  onClick={() => removeSymptom(index)}
+                  style={{ marginLeft: "5px", padding: "5px", borderRadius: "3px", backgroundColor: "#ff4d4d", color: "white", border: "none" }}
+                >
+                  Remove Symptom
+                </button>
               </div>
             ))}
             <button
@@ -272,6 +323,38 @@ export default function TriggerMain() {
             </button>
           </label>
         </div>
+
+        <button type="button" className="btn btn-secondary ms-2" onClick={() => setShowNewSymptomForm(!showNewSymptomForm)}> Add New Symptom</button>
+        {showNewSymptomForm && (
+          <div className="mt-4">
+          <h4>Add New Symptom</h4>
+          <div className="mb-3">
+            <label htmlFor="new-symptom" className="form-label">Symptom Name:</label>
+            <input
+              type="text"
+              className="form-control"
+              id="new-symptom"
+              value={newSymptom}
+              onChange={(e) => setNewSymptom(e.target.value)}
+            />
+            <br></br>
+          </div>
+          <button
+            type="button"
+            className="btn btn-primary"
+            onClick={handleAddSymptom}
+          >
+            Add Symptom
+          </button>
+          <button
+            type="button"
+            className="btn btn-secondary ms-2"
+            onClick={() => setShowNewSymptomForm(false)}
+          >
+            Cancel
+          </button>
+        </div>
+        )}
 
         <div style={{ marginBottom: "15px" }}>
           <label>
@@ -310,6 +393,18 @@ export default function TriggerMain() {
             <textarea
               name="SelectionAdditionalInfo"
               value={formData.SelectionAdditionalInfo}
+              onChange={handleChange}
+              style={{ width: "100%", padding: "8px", marginTop: "5px", borderRadius: "4px", border: "1px solid #ccc" }}
+            />
+          </label>
+        </div>
+
+        <div style={{ marginBottom: "15px" }}>
+          <label>
+            General Additional Info:
+            <textarea
+              name="GeneralAdditionalInfo"
+              value={formData.GeneralAdditionalInfo}
               onChange={handleChange}
               style={{ width: "100%", padding: "8px", marginTop: "5px", borderRadius: "4px", border: "1px solid #ccc" }}
             />
