@@ -21,14 +21,22 @@ def showSymptoms(request):
         symptomsSerializer = SymptomsSerializer(symptoms, many = True)
         return Response(symptomsSerializer.data)
 
+#Get response
 @api_view(['POST'])
 def PostTriggerForm(request):
     if request.method == 'POST':
         print(request.data)  
 
         #Get all the foreign IDs of symptoms
-        symptom_ids = request.data.get('SelectedSymptomsIDs', [])
-        symptoms = Symptoms.objects.filter(id__in=symptom_ids)
+        positive_symptom_ids = request.data.get('PositiveSymptomIDs', [])
+        negative_symptom_ids = request.data.get('NegativeSymptomIDs', [])
+        mandatory_positive_symptom_ids = request.data.get('MandatoryPositiveSymptomIDs', [])
+        mandatory_negative_symptom_ids = request.data.get('MandatoryNegativeSymptomIDs', [])
+        positiveSymptoms = Symptoms.objects.filter(id__in=positive_symptom_ids)
+        negativeSymptoms = Symptoms.objects.filter(id__in=negative_symptom_ids)
+        mandatoryPositiveSymptoms = Symptoms.objects.filter(id__in = mandatory_positive_symptom_ids)
+        mandatoryNegativeSymptoms = Symptoms.objects.filter(id__in = mandatory_negative_symptom_ids)
+
 
         triggerForm_data = {
             'Name': request.data.get('Name'),
@@ -44,7 +52,10 @@ def PostTriggerForm(request):
         if triggerChecklistSerializer.is_valid():
             triggerForm = triggerChecklistSerializer.save()
             # Save the Many-to-Many field
-            triggerForm.SymptomItems.set(symptoms)
+            triggerForm.PositiveSymptoms.set(positiveSymptoms)
+            triggerForm.NegativeSymptoms.set(negativeSymptoms)
+            triggerForm.MandatoryPositiveSymptoms.set(mandatoryPositiveSymptoms)
+            triggerForm.MandatoryNegativeSymptoms.set(mandatoryNegativeSymptoms)
             return Response(triggerChecklistSerializer.data, status=201)
         else:
             print(triggerChecklistSerializer.errors)

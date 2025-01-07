@@ -21,7 +21,7 @@ interface SelectionType {
 interface SelectedSymptom {
   id: number;
   Name: string;
-  selectionType: string; // Assumed to be a string, could be updated if needed
+  symptomState: string; // Assumed to be a string, could be updated if needed
 }
 
 export default function TriggerMain() {
@@ -44,8 +44,11 @@ export default function TriggerMain() {
   const [formData, setFormData] = useState<{
     Name: string;
     Group: string;
-    SelectedSymptoms: SelectedSymptom[]; // Each symptom with its type
-    SelectedSymptomsIDs: number[];
+    SelectedSymptoms: SelectedSymptom[]; // Each symptom with its type for the checklist logic
+    PositiveSymptomIDs: number[];
+    NegativeSymptomIDs: number[];
+    MandatoryPositiveSymptomIDs: number[];
+    MandatoryNegativeSymptomIDs: number[];
     SelectionTypeID: number | null;
     SelectionAdditionalInfo: string;
     ChecklistLogicInfo: string;
@@ -55,7 +58,10 @@ export default function TriggerMain() {
     Name: '',
     Group: '',
     SelectedSymptoms: [],
-    SelectedSymptomsIDs:[],
+    PositiveSymptomIDs:[],
+    NegativeSymptomIDs: [],
+    MandatoryPositiveSymptomIDs: [],
+    MandatoryNegativeSymptomIDs: [],
     SelectionTypeID: null,
     SelectionAdditionalInfo: '',
     GeneralAdditionalInfo:'',
@@ -85,30 +91,29 @@ export default function TriggerMain() {
     }));
   };
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
+  const handleChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>
+  ) => {
     const { name, value } = e.target;
-    
-     // Generate new ChecklistLogicInfo based on updated form data
-     
-
-    if (name === "SelectionTypeID") {
-      const selectedId = parseInt(value);
-      setFormData((prevState) => ({
-        ...prevState,
-        SelectionTypeID: selectedId, // Store the ID, not the Name
-      }));
-    } else{
-      const updatedChecklistLogicInfo = generateChecklistLogicInfo(formData.SelectedSymptoms);
-      setFormData((prevState) => ({
+  
+    // Update the respective property
+    setFormData((prevState) => {
+      const updatedSymptoms = name === "SelectedSymptoms" ? [...prevState.SelectedSymptoms] : prevState.SelectedSymptoms;
+      const { positive, negative, mandatoryPositive, mandatoryNegative } = categorizeSymptoms(updatedSymptoms);
+  
+      return {
         ...prevState,
         [name]: value,
-        ChecklistLogicInfo: updatedChecklistLogicInfo
-      }));
-    }
+        PositiveSymptomIDs: positive,
+        NegativeSymptomIDs: negative,
+        MandatoryPositiveSymptomIDs: mandatoryPositive,
+        MandatoryNegativeSymptomIDs: mandatoryNegative,
+        ChecklistLogicInfo: generateChecklistLogicInfo(updatedSymptoms),
+      };
+    });
   };
   
-  
-
+  //choosing a symptom option 
   const handleSymptomSelectionChange = (index: number, e: React.ChangeEvent<HTMLSelectElement>) => {
     const selectedSymptomId = parseInt(e.target.value);
     const selectedSymptom = symptoms.find(symptom => symptom.id === selectedSymptomId);
@@ -118,17 +123,17 @@ export default function TriggerMain() {
       const updatedSymptoms = [...formData.SelectedSymptoms];
       updatedSymptoms[index] = {
         ...selectedSymptom,
-        selectionType: "Positive", // Default to Positive or leave blank
+        symptomState: "Positive", // Default to Positive since when changing symptoms, assuming want to eliminate the positive, negative, etc. (symptom state)
       };
 
-      //save without the selectionType to make things easier for backend processing (just return the array of ids)
-      const updatedSymptomsIDs = [...formData.SelectedSymptomsIDs];
+      //save without the symptom's symptom state (positive, negative, etc.) to make things easier for backend processing (just return the array of symptoms ids)
+      const updatedSymptomsIDs = [...formData.PositiveSymptomIDs];
       updatedSymptomsIDs[index] = selectedSymptomId;
       const updatedChecklistLogicInfo = generateChecklistLogicInfo(updatedSymptoms);
       setFormData((prevState) => ({
         ...prevState,
         SelectedSymptoms: updatedSymptoms,
-        SelectedSymptomsIDs: updatedSymptomsIDs,
+        PositiveSymptomIDs: updatedSymptomsIDs,
         ChecklistLogicInfo: updatedChecklistLogicInfo
       }));
     }
@@ -136,7 +141,7 @@ export default function TriggerMain() {
 
   const handleSelectionTypeChange = (index: number, selectionType: string) => {
     const updatedSymptoms = [...formData.SelectedSymptoms];
-    updatedSymptoms[index].selectionType = selectionType;
+    updatedSymptoms[index].symptomState = selectionType;
     const updatedChecklistLogicInfo = generateChecklistLogicInfo(updatedSymptoms);
 
     setFormData((prevState) => ({
@@ -146,19 +151,54 @@ export default function TriggerMain() {
     }));
   };
 
+
+  //add new symptom selection with positive, negative, etc. 
   const addSymptomSelection = () => {
-    const updatedSymptoms = [...formData.SelectedSymptoms, { id: 0, Name: '', selectionType: "Positive" }];
+    const updatedSymptoms = [...formData.SelectedSymptoms, { id: 0, Name: '', symptomState: "Positive" }];
     const updatedChecklistLogicInfo = generateChecklistLogicInfo(updatedSymptoms);
+    const {positive, negative, mandatoryPositive, mandatoryNegative} = categorizeSymptoms(updatedSymptoms);
     setFormData((prevState) => ({
       ...prevState,
+      PositiveSymptomIDs: positive,
+      NegativeSymptomIDs: negative,
+      MandatoryPositiveSymptomIDs: mandatoryPositive,
+      MandatoryNegativeSymptomIDs: mandatoryNegative,
       SelectedSymptoms: updatedSymptoms,
       ChecklistLogicInfo: updatedChecklistLogicInfo
     }));
+  };
+
+  //helper function to separate out the symptoms to PositiveSymptomIds, etc. 
+  const categorizeSymptoms = (selectedSymptoms: SelectedSymptom[]) =>{
+    const positive: number[] = [];
+    const negative: number[] = [];
+    const mandatoryPositive: number[] = [];
+    const mandatoryNegative: number[] = [];
+
+    selectedSymptoms.forEach((symptom) => {
+      switch(symptom.symptomState){
+        case "Positive":
+          positive.push(symptom.id);
+          break;
+        case "Negative":
+          negative.push(symptom.id);
+          break;
+        case "Mandatory Positive":
+          mandatoryPositive.push(symptom.id);
+          break;
+        case "Mandatory Negative":
+          mandatoryNegative.push(symptom.id);
+          break;
+      }
+    });
+
+    return {positive, negative, mandatoryPositive, mandatoryNegative};
+
   };
 
   const generateChecklistLogicInfo = (SelectedSymptoms: SelectedSymptom[]) => {
     return SelectedSymptoms.map(symptom => {
-      switch (symptom.selectionType) {
+      switch (symptom.symptomState) {
         case 'Positive':
           return `[(${symptom.id})], `;
         case 'Negative':
@@ -175,12 +215,15 @@ export default function TriggerMain() {
 
   const removeSymptom = (index: number) => {
     const updatedSymptoms = formData.SelectedSymptoms.filter((_, i) => i !== index);
-    const updatedSymptomsIDs = updatedSymptoms.map(symptom => symptom.id);
+    const {positive, negative, mandatoryPositive, mandatoryNegative} = categorizeSymptoms(updatedSymptoms);
     const updatedChecklistLogicInfo = generateChecklistLogicInfo(updatedSymptoms);
     setFormData((prevState) => ({
       ...prevState,
       SelectedSymptoms: updatedSymptoms,
-      SelectedSymptomsIDs: updatedSymptomsIDs,
+      PositiveSymptomIDs: positive,
+      NegativeSymptomIDs: negative,
+      MandatoryPositiveSymptomIDs: mandatoryPositive,
+      MandatoryNegativeSymptomIDs: mandatoryNegative,
       ChecklistLogicInfo: updatedChecklistLogicInfo
     }));
   };
@@ -208,7 +251,10 @@ export default function TriggerMain() {
           Name: '',
           Group: '',
           SelectedSymptoms: [],
-          SelectedSymptomsIDs: [],
+          PositiveSymptomIDs: [],
+          NegativeSymptomIDs: [],
+          MandatoryPositiveSymptomIDs: [],
+          MandatoryNegativeSymptomIDs: [],
           SelectionTypeID: null,
           SelectionAdditionalInfo: '',
           GeneralAdditionalInfo: '',
@@ -275,7 +321,7 @@ export default function TriggerMain() {
                   <label>
                     <input
                       type="checkbox"
-                      checked={selectedSymptom.selectionType === "Positive"}
+                      checked={selectedSymptom.symptomState === "Positive"}
                       onChange={() => handleSelectionTypeChange(index, "Positive")}
                     />
                     Positive
@@ -283,7 +329,7 @@ export default function TriggerMain() {
                   <label>
                     <input
                       type="checkbox"
-                      checked={selectedSymptom.selectionType === "Negative"}
+                      checked={selectedSymptom.symptomState === "Negative"}
                       onChange={() => handleSelectionTypeChange(index, "Negative")}
                     />
                     Negative
@@ -291,7 +337,7 @@ export default function TriggerMain() {
                   <label>
                     <input
                       type="checkbox"
-                      checked={selectedSymptom.selectionType === "Mandatory Positive"}
+                      checked={selectedSymptom.symptomState === "Mandatory Positive"}
                       onChange={() => handleSelectionTypeChange(index, "Mandatory Positive")}
                     />
                     Mandatory Positive
@@ -299,7 +345,7 @@ export default function TriggerMain() {
                   <label>
                     <input
                       type="checkbox"
-                      checked={selectedSymptom.selectionType === "Mandatory Negative"}
+                      checked={selectedSymptom.symptomState === "Mandatory Negative"}
                       onChange={() => handleSelectionTypeChange(index, "Mandatory Negative")}
                     />
                     Mandatory Negative
