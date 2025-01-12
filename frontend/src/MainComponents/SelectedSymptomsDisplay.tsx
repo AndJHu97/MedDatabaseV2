@@ -1,4 +1,5 @@
 import React from "react";
+import SelectionButton from "./SelectionButton";
 
 interface Symptom {
   id: number;
@@ -28,32 +29,7 @@ const SelectedSymptomsDisplay: React.FC<SelectedSymptomsDisplayProps> = ({
       }}
     >
       {selectedSymptoms.map((symptom) => (
-        <div
-          key={symptom.id}
-          style={{
-            display: "flex",
-            alignItems: "center",
-            backgroundColor: "#007BFF",
-            color: "white",
-            borderRadius: "16px",
-            padding: "4px 8px",
-          }}
-        >
-          <span>{symptom.Name}</span>
-          <button
-            onClick={() => onRemoveSymptom(symptom.id)}
-            style={{
-              marginLeft: "8px",
-              background: "transparent",
-              border: "none",
-              color: "white",
-              fontSize: "16px",
-              cursor: "pointer",
-            }}
-          >
-            ×
-          </button>
-        </div>
+        <SelectionButton name = {symptom.Name} id = {symptom.id} onRemoveSelection={onRemoveSymptom}></SelectionButton>
       ))}
     </div>
   );

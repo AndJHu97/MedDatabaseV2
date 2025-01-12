@@ -11,7 +11,19 @@ class TriggerChecklist(models.Model):
     Name = models.CharField(max_length=255, null=True)
     Group = models.CharField(max_length = 2)
     #Need to split to positive and negative symptoms
-    SymptomItems = models.ManyToManyField(Symptoms, related_name='trigger_checklist', null = True, blank = True)
+    # Separate Many-to-Many fields for positive and negative symptoms
+    PositiveSymptoms = models.ManyToManyField(
+        'Symptoms', related_name='positive_trigger_checklist', blank=True
+    )
+    NegativeSymptoms = models.ManyToManyField(
+        'Symptoms', related_name='negative_trigger_checklist', blank=True
+    )
+    MandatoryPositiveSymptoms = models.ManyToManyField(
+        'Symptoms', related_name='mandatory_positive_trigger_checklist', blank=True
+    )
+    MandatoryNegativeSymptoms = models.ManyToManyField(
+        'Symptoms', related_name='mandatory_negative_trigger_checklist', blank=True
+    )
     ChecklistLogic = models.CharField(max_length=255, null=True)
     #Type of selection like all or nothing or need 3/5 of the symptoms or cannot be these
     SelectionType = models.ForeignKey('SelectionType', on_delete=models.CASCADE, null=True, blank = True)
