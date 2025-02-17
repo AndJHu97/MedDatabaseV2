@@ -11,10 +11,15 @@ interface Symptom {
   Name: string;
 }
 
+interface NextSteps{
+  symptom_id: number;
+  trigger_name: string;
+}
+
 export default function MainComponent() {
   const [selectedSymptoms, setSelectedSymptoms] = useState<Symptom[]>([]);
+  const [positiveNextSteps, setPositiveNextSteps] = useState<NextSteps[]>([]);
   // Example usage
-  const symptomIds = [1, 2, 3, 30];
   const handleSymptomSubmit = (symptom: Symptom | null) => {
     //check if the symptom isn't selected yet
     if (symptom && !selectedSymptoms.some((s) => s.id === symptom.id)) {
@@ -32,11 +37,13 @@ export default function MainComponent() {
 
   const getMatchingTriggerChecklists = async () => {
     try {
+
+      const symptomIds = selectedSymptoms.map(symptom => symptom.id); // Extract IDs
       const response = await axios.post('http://localhost:8000/api/trigger/getMatchedDefaultTriggers/', {
         symptom_ids: symptomIds,
       });
       console.log(response.data);
-      return response.data; // This contains the matching checklists
+      setPositiveNextSteps(response.data["positive_next_step_recommendations"]);
     } catch (error: any) {
       console.error('Error fetching matching trigger checklists:', error.response.data);
       return [];
@@ -55,13 +62,11 @@ export default function MainComponent() {
         onRemoveSymptom={handleRemoveSelectedSymptom}
       />
       <br></br>
-      <NextStepsSelections name = "Next Steps"></NextStepsSelections>
+      <NextStepsSelections name = "Positive Next Steps" NextSteps={positiveNextSteps}></NextStepsSelections>
       <br></br>
-
-      <NextStepsSelections name = "Triggers"></NextStepsSelections>
+      <NextStepsSelections name = "Triggers"  NextSteps={positiveNextSteps}></NextStepsSelections>
       <br></br>
-      <NextStepsSelections name = "Algorithms"></NextStepsSelections>
-
+      <NextStepsSelections name = "Algorithms"  NextSteps={positiveNextSteps}></NextStepsSelections>
       <br></br>
       {/* Potential could remove and also make this a next steps selection. However logic could be tricky. 
       Can implement the display of buttons with the next steps though */}
