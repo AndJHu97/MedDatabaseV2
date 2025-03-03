@@ -137,10 +137,11 @@ def Post_Initial_DiseaseAlgorithmNode(request):
         }
         diseaseAlgorithmSerializer = DiseaseAlgorithmSerializer(data = diseaseAlgorithm_data)
         if diseaseAlgorithmSerializer.is_valid():
-            diseaseAlgorithmSerializer.save()
+            disease_algorithm = diseaseAlgorithmSerializer.save()
 
-        if diseaseAlgorithmSerializer.is_valid():
-            diseaseAlgorithmSerializer.save()
+            #add to root nodes in disease
+            disease = Disease.objects.get(id = request.data.get('DiseaseId'))
+            disease.RootAlgorithmNodes.add(disease_algorithm)
             return Response(diseaseAlgorithmSerializer.data, status=201)
         else:
             return Response(diseaseAlgorithmSerializer.errors, status=400)
@@ -268,8 +269,7 @@ def add_disease(request):
             return JsonResponse({'id': saved_disease_data_serialized.id, 'Name': saved_disease_data_serialized.Name}, status = 201)
         return JsonResponse({"Could not save disease"}, status = 404)
 
-
-        
+      
 @api_view(['POST'])
 def inputSymptoms(request):
     if request.method == 'POST':
@@ -295,28 +295,4 @@ def inputSymptoms(request):
         #Use session variables 
 
     return JsonResponse({'error': 'Only POST requests are allowed'}, status=405)
-
-
-
-
-#archive
-@api_view(['GET'])
-def getSelectiveDiseaseAlgorithmData(request, dfk):
-    diseaseAlgorithm = DiseaseAlgorithm.objects.filter(Disease = dfk)
-    serializer = DiseaseAlgorithmSerializer(diseaseAlgorithm, many = True)
-    return Response(serializer.data)
-
-
-@api_view(['GET','POST'])
-def test(request):
-    if request.method == 'POST':
-        symptoms = request.data.get('testVariable')
-        # Perform some logic with the symptoms data
-        # For example, you could process the symptoms and return additional questions
-        additional_questions = ['Do you have a fever?', 'Are you experiencing coughing or shortness of breath?']
-        return Response({'additional_questions': additional_questions})
-    else:
-        # Handle GET requests, if needed
-        return Response({'message': 'This endpoint only supports POST requests'}, status=405)  # Method Not Allowed
-
 

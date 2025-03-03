@@ -171,8 +171,10 @@ class Management(models.Model):
 class Disease(models.Model):
     Name = models.CharField(max_length=255, null = True, blank=True)
     Notes = models.TextField(blank=True, null = True)
-    AlgorithmTrigger = models.ManyToManyField(TriggerChecklist, related_name = "disease_alg_trigger")
+    AlgorithmTrigger = models.ManyToManyField(TriggerChecklist, related_name = "disease_alg_trigger", blank=True)
+    RootAlgorithmNodes = models.ManyToManyField(DiseaseAlgorithm, related_name='root_diseases_algorithms', blank=True)
     Management = models.ForeignKey('Management', on_delete=models.CASCADE, null=True, blank=True)
+    
 
 class TestManagement(models.Model):
     Name = models.CharField(max_length=255, null=True)
