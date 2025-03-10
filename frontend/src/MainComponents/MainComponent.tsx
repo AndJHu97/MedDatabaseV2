@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import SymptomSelection from "./SymptomSelection";
 import SelectedSymptomsDisplay from "./SelectedSymptomsDisplay";
 import RecommendedStepsSelections from "./RecommendedStepsSelections";
@@ -31,13 +31,18 @@ interface TriggerChecklist {
   Disease: number | null;
 }
 
+interface DiseaseAlgorithm{
+  id: number;
+  next_steps: number[];
+}
+
 export default function MainComponent() {
   const [selectedSymptoms, setSelectedSymptoms] = useState<Symptom[]>([]);
   const [positiveNextSteps, setPositiveNextSteps] = useState<NextSteps[]>([]);
   const [negativeNextSteps, setNegativeNextSteps] = useState<NextSteps[]>([]);
   const [matchedTriggers, setMatchedTriggers] = useState<TriggerChecklist[]>([]); 
+  const [diseaseAlgorithmsTriggered, setDiseaseAlgorithmsTriggered] = useState<DiseaseAlgorithm[]>([]);
 
-  // Example usage
   const handleSymptomSubmit = (symptom: Symptom | null) => {
     //check if the symptom isn't selected yet
     if (symptom && !selectedSymptoms.some((s) => s.id === symptom.id)) {
@@ -56,19 +61,51 @@ export default function MainComponent() {
   const getMatchingTriggerChecklists = async () => {
     try {
 
-      const symptomIds = selectedSymptoms.map(symptom => symptom.id); // Extract IDs
-      const response = await axios.post('http://localhost:8000/api/main/getMatchedDefaultTriggers/', {
-        symptom_ids: symptomIds,
+      const symptomIds = selectedSymptoms.map(symptom => symptom.id); 
+      const response = await axios.get('http://localhost:8000/api/main/getMatchedDefaultTriggers/', {
+        params: { symptom_ids: symptomIds.join(',') }
       });
       console.log(response.data);
       setPositiveNextSteps(response.data["positive_next_step_recommendations"]);
       setNegativeNextSteps(response.data["negative_next_step_recommendations"]);
       setMatchedTriggers(response.data["matched_trigger_checklists"]);
+
+      const diseaseAlgorithms: DiseaseAlgorithm[] = response.data["diseases_ids_triggered"].map((id: number) => ({
+        id: id,
+        next_steps: [] //set empty
+      }));
+
+      setDiseaseAlgorithmsTriggered(diseaseAlgorithms);
+
     } catch (error: any) {
       console.error('Error fetching matching trigger checklists:', error.response.data);
       return [];
     }
   };
+
+  const getDiseaseAlgorithms = async () =>{
+    try{
+      for(const diseaseAlgorithm of diseaseAlgorithmsTriggered){
+        const response = await axios.get('http://localhost:8000/api/main/getDiseaseAlgorithms/',{
+          params: {
+            disease_id: diseaseAlgorithm.id,
+            next_steps_ids: diseaseAlgorithm.next_steps
+            }
+          }
+        );
+        console.log(response.data);
+      }
+    } catch (error: any) {
+      console.error('Error fetching disease algorithms: ', error.response.data);
+      return [];
+    }
+  }
+
+  useEffect(() => {
+    if (diseaseAlgorithmsTriggered.length > 0){
+      getDiseaseAlgorithms();
+    } 
+  }, [diseaseAlgorithmsTriggered])
 
 
   return (
