@@ -1,8 +1,9 @@
+from rest_framework import status 
 from rest_framework.response import Response
 from django.http import JsonResponse
 from rest_framework.decorators import api_view
-from main.models import TriggerChecklist, Symptoms, SelectionType, Disease
-from .main_serializers import DiseaseSerializer, SymptomsSerializer, TriggerChecklistSerializer, NextStep, DiseaseAlgorithmSerializer, DiagnosisSerializer, SelectionTypeSerializer
+from main.models import TriggerChecklist, Symptoms, SelectionType, Disease, DiseaseAlgorithm, NextStep
+from .main_serializers import DiseaseSerializer, SymptomsSerializer, TriggerChecklistSerializer, NextStepsSerializer, DiseaseAlgorithmSerializer, DiagnosisSerializer, SelectionTypeSerializer
 from django.views.decorators.csrf import csrf_exempt
 from django.shortcuts import get_object_or_404
 import json
@@ -22,6 +23,55 @@ def showDiseases(request):
         diseaseSerializer = DiseaseSerializer(diseases, many = True)
         return Response(diseaseSerializer.data)
     
+@api_view(['GET'])
+def showDiseaseById(request):
+    if request.method == 'GET':
+        disease_id = request.GET.get('id', None)
+
+        if not disease_id:
+            return Response({'error': 'ID parameter is required'}, status=status.HTTP_400_BAD_REQUEST)
+        
+        try:
+            disease = Disease.objects.get(id = disease_id)
+            serializer = DiseaseSerializer(disease)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        
+        except Disease.DoesNotExist:
+            return Response({'error': 'Disease not found'}, status=status.HTTP_404_NOT_FOUND)
+    
+@api_view(['GET'])
+def showDiseaseAlgorithm(request):
+    if request.method == 'GET':
+        disease_algorithm_id = request.GET.get('id', None)
+
+        if not disease_algorithm_id:
+            return Response({'error': 'ID parameter is required'}, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            # Fetch the DiseaseAlgorithm object using the provided ID
+            disease_algorithm = DiseaseAlgorithm.objects.get(id=disease_algorithm_id)
+
+            # Serialize the disease_algorithm object and return it
+            serializer = DiseaseAlgorithmSerializer(disease_algorithm)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+
+        except DiseaseAlgorithm.DoesNotExist:
+            return Response({'error': 'DiseaseAlgorithm not found'}, status=status.HTTP_404_NOT_FOUND)
+    
+@api_view(['GET'])
+def showNextSteps(request):
+    if request.method == 'GET':
+        next_step_id = request.GET.get('id', None)
+
+    if not next_step_id:
+        return Response({'error': 'ID parameter is required'}, status=status.HTTP_400_BAD_REQUEST)
+    try:
+        next_step = NextStep.objects.get(id = next_step_id)
+        next_step_serializer = NextStepsSerializer(next_step)
+        return Response(next_step_serializer.data, status = status.HTTP_200_OK)
+    except NextStep.DoesNotExist:
+        return Response({'error': 'Next Steps not found'}, status=status.HTTP_404_NOT_FOUND)
+
 @api_view(['GET'])
 def GetDefaultMatchingTriggerChecklists(request):
     symptom_ids_str = request.GET.get('symptom_ids', '')  # Retrieves as a string
@@ -311,12 +361,13 @@ def GetDefaultMatchingTriggerChecklists(request):
 
     matched_trigger_checklists = filtered_triggers.filter(id__in = matched_trigger_ID).distinct()
     matched_trigger_checklists_serialized = TriggerChecklistSerializer(matched_trigger_checklists, many = True)
+    disease_ids_triggered = matched_trigger_checklists.values_list('Disease', flat = True).distinct()
 
     response_data = {
     "matched_trigger_checklists": matched_trigger_checklists_serialized.data,
     "positive_next_step_recommendations": list(positive_next_step_recommendations),
     "negative_next_step_recommendations": list(negative_next_step_recommendations),
-    "diseases_ids_triggered": matched_trigger_ID
+    "diseases_ids_triggered": disease_ids_triggered
     }
 
     return Response(response_data, status = 200)
@@ -327,8 +378,8 @@ def GetDefaultDiseaseAlgorithms(request):
         disease_id = request.GET.get('disease_id')
         next_steps_ids = request.GET.get('next_steps_ids', '')
         #convert to int
-        next_steps_ids = set(map(int, next_steps_ids))  
-
+        next_steps_ids = list(map(int, next_steps_ids.split(','))) if next_steps_ids else []
+        print("next step ids: ", next_steps_ids)
         if not disease_id:
             return Response({'error': 'Disease ID is required'}, status=400)
         
@@ -338,12 +389,18 @@ def GetDefaultDiseaseAlgorithms(request):
             return Response({'error': 'Disease not found'}, status = 400)
         
         root_algorithms = disease.RootAlgorithmNodes.all()
-        #ONLY DOES THE FIRST ONE
+        #ONLY DOES THE FIRST ONE OF ROOT ALGORITHM
         final_algorithm = root_algorithms.first()
 
-        #ids need to be in order
+        if final_algorithm is None:
+            return Response({'error': 'No root algorithm found for this disease'}, status=400)
+        print("root node: ", final_algorithm)
+
+        #Assume that the logged next steps from user are in order
         for i in range(len(next_steps_ids)):
             algorithm_next_steps = final_algorithm.NextSteps.all()
+            print("algorithm next steps: ", algorithm_next_steps)
+            #Get all of the next steps of algorithm
             algorithm_next_steps_ids =  {step.id for step in algorithm_next_steps}
 
             #matched next steps given with the disease algorithm's next steps
@@ -354,10 +411,10 @@ def GetDefaultDiseaseAlgorithms(request):
             #grab the next algorithm
             final_algorithm = selected_next_step.NextStepDiseaseAlgorithm
 
-        final_Algorithm_Serializer = DiseaseAlgorithmSerializer(final_algorithm)
-
-        #To-do: need to return next steps of final algorithm too!!
-        return Response(final_Algorithm_Serializer.data)
+        #convert next steps to a list of id
+        final_next_step_ids = list(final_algorithm.NextSteps.values_list('id', flat=True))
+        
+        return Response({"test_id": final_algorithm.id, 'next_steps_ids': final_next_step_ids})
 
 
 

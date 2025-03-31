@@ -34,11 +34,11 @@ interface Disease {
 
 interface RecommendedStepsDataProp {
   name: string;
-  NextSteps: NextSteps[] | null;
+  TriggerNextSteps: NextSteps[] | null;
   TriggerChecklists: TriggerChecklist[] | null;
 }
 
-export default function RecommendedStepsSelections({ name, NextSteps, TriggerChecklists }: RecommendedStepsDataProp) {
+export default function RecommendedStepsSelections({ name, TriggerNextSteps, TriggerChecklists }: RecommendedStepsDataProp) {
   const [areRecommendedStepsVisible, setAreRecommendedStepsVisible] = useState(false);
   const [symptomNames, setSymptomNames] = useState<Record<number, string>>({});
   const [diseaseNames, setDiseaseNames] = useState<Record<number, string>>({});
@@ -81,10 +81,10 @@ export default function RecommendedStepsSelections({ name, NextSteps, TriggerChe
     setAreRecommendedStepsVisible((prev) => !prev);
   };
 
-  // Group NextSteps by trigger_name
+  // Group TriggerNextSteps by trigger_name
   const groupedNextSteps: Record<string, NextSteps[]> = {};
-  if (NextSteps) {
-    NextSteps.forEach((step) => {
+  if (TriggerNextSteps) {
+    TriggerNextSteps.forEach((step) => {
       if (!groupedNextSteps[step.trigger_name]) {
         groupedNextSteps[step.trigger_name] = [];
       }
@@ -104,7 +104,7 @@ export default function RecommendedStepsSelections({ name, NextSteps, TriggerChe
 
       {areRecommendedStepsVisible && (
         <div className="recommended-steps-choices">
-          {NextSteps ? (
+          {TriggerNextSteps ? (
             Object.entries(groupedNextSteps).map(([triggerName, symptoms]) => (
               <div key={triggerName}>
                 <h5 style={{ color: "#007BFF", fontSize: "18px", marginBottom: "8px" }}>{triggerName}</h5>
