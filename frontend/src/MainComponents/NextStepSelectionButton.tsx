@@ -3,18 +3,18 @@ import React, { useState } from "react"
 interface SelectionButtonProps{
     name: string;
     nextStepID: number;
-    diseaseAlgorithmIndex: number;
+    diseaseID: number;
     onSelection: (nextStepID: number, diseaseAlgorithmIndex: number, isSelected: boolean) => void;
 }
 
-export default function NextStepSelectionButton({name, nextStepID, diseaseAlgorithmIndex, onSelection}: SelectionButtonProps){
+export default function NextStepSelectionButton({name, nextStepID, diseaseID, onSelection}: SelectionButtonProps){
   const [isSelected, setIsSelected] = useState(false);
   
   const selectingButton = () =>{
     setIsSelected((prev) => !prev);
 
     //send selection
-    onSelection(nextStepID, diseaseAlgorithmIndex, !isSelected);
+    onSelection(nextStepID, diseaseID, !isSelected);
   }
 
 
