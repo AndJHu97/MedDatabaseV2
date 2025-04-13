@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import SymptomSelection from "./SymptomSelection";
 import SelectedSymptomsDisplay from "./SelectedSymptomsDisplay";
 import RecommendedStepsSelections from "./RecommendedStepsSelections";
@@ -53,7 +53,7 @@ export default function MainComponent() {
   const [negativeNextSteps, setNegativeNextSteps] = useState<NextSteps[]>([]);
   const [matchedTriggers, setMatchedTriggers] = useState<TriggerChecklist[]>([]); 
   const [diseaseAlgorithmsInvestigating, setDiseaseAlgorithmsInvestigating] = useState<DiseaseAlgorithmTree[]>([]);
-  const [prevDiseaseAlgorithmsInvestigating, setPrevDiseaseAlgorithmsInvestigating] = useState<DiseaseAlgorithmTree[]>([]);
+  const prevDiseaseAlgorithmsInvestigatingRef = useRef<DiseaseAlgorithmTree[]>([]);
 
   const handleSymptomSubmit = (symptom: Symptom | null) => {
     //check if the symptom isn't selected yet
@@ -70,6 +70,8 @@ export default function MainComponent() {
     //need to implement
   }
 
+  
+
   //matching algorithms also trigger the disease algorithms it triggers
   const getMatchingTriggerChecklists = async () => {
     try {
@@ -81,7 +83,20 @@ export default function MainComponent() {
       //console.log("Get matched default triggers: ", response.data);
       setPositiveNextSteps(matched_triggers_response.data["positive_next_step_recommendations"]);
       setNegativeNextSteps(matched_triggers_response.data["negative_next_step_recommendations"]);
+
       setMatchedTriggers(matched_triggers_response.data["matched_trigger_checklists"]);
+
+
+      //if the diseases triggered are already being investigated, don't search through them
+      const investigatingDiseaseIds = diseaseAlgorithmsInvestigating.map(alg => alg.disease_id).sort();
+      const newTriggeredDiseaseIds = matched_triggers_response.data["diseases_ids_triggered"].slice().sort();
+
+      if (JSON.stringify(investigatingDiseaseIds) === JSON.stringify(newTriggeredDiseaseIds)) {
+        console.log("Same diseases already being investigated. Skipping update.");
+        return;
+      }
+
+      //If new disease trigered, then investigate through them.  
 
       //if triggered any of the disease, then start the algorithms
       const diseaseAlgorithms: DiseaseAlgorithmTree[] = await Promise.all(
@@ -111,7 +126,6 @@ export default function MainComponent() {
               existingAlgorithmTree.DiseaseAlgorithmNodes.push(newRootAlgorithmNode);
             }
           }
-          
       
           return {
           
@@ -123,9 +137,9 @@ export default function MainComponent() {
         })
       );
       
+      console.log("Setting disease algorithm in matching triggers ", diseaseAlgorithms);
       //set all the triggered algorithms (doesn't include next steps)
       setDiseaseAlgorithmsInvestigating(diseaseAlgorithms);
-
     } catch (error: any) {
       if (error.response) {
         console.error('Error fetching matching trigger checklists:', error.response.data);
@@ -143,54 +157,65 @@ export default function MainComponent() {
 
       //deep copy because before i was doing shallow copy (still referencing) and would change the diseaseAlgorithmsInvestigating without triggering re-render
       //Deep copy makes it so I don't change the diseaseAlgorithmIvestigating and later in code I can setDiseaseAlgorithmInvestigating for a re-render
+      //filter out anything already being investigated so it doesn't do it again. 
       const updatedAlgorithmTree = structuredClone(diseaseAlgorithmsInvestigating);
-
+  
       //diseaseAlgorithmInvestigating: Go through the current investigating algorithms and update on next steps
       for(const diseaseAlgorithmTree of updatedAlgorithmTree){
-        const disease_algorithm_response = await axios.get('http://localhost:8000/api/main/getDiseaseAlgorithms/',{
-          params: {
-            disease_id: diseaseAlgorithmTree.disease_id,
-            next_steps_ids: Array.isArray(diseaseAlgorithmTree.selected_next_steps) ? diseaseAlgorithmTree.selected_next_steps.join(',') : ''
+        if(!prevDiseaseAlgorithmsInvestigatingRef.current.some(
+            (prev) => JSON.stringify(prev) === JSON.stringify(diseaseAlgorithmTree)
+          ))
+          {
+            const disease_algorithm_response = await axios.get('http://localhost:8000/api/main/getDiseaseAlgorithms/',{
+              params: {
+                disease_id: diseaseAlgorithmTree.disease_id,
+                next_steps_ids: Array.isArray(diseaseAlgorithmTree.selected_next_steps) ? diseaseAlgorithmTree.selected_next_steps.join(',') : ''
+                }
+              }
+            );
+            
+            const updated_disease_algorithm_ID: number = disease_algorithm_response.data["test_id"];
+            const updated_next_steps_ids: number[] = disease_algorithm_response.data["next_steps_ids"];
+    
+            //this is if i only want one algorithm for disease
+            //const existingAlgorithmIndex = updatedAlgorithms.findIndex(alg => alg.disease_id === diseaseAlgorithm.id);
+    
+            // 1. Find the disease of the tree
+            // 2. Find the index of node of the tree to see if it exists
+    
+            const existingDiseaseAlgorithmNodes = diseaseAlgorithmTree.DiseaseAlgorithmNodes ?? [];
+    
+            const existingAlgorithmNodeIndex = existingDiseaseAlgorithmNodes.findIndex(alg => alg.disease_algorithm_id === updated_disease_algorithm_ID);
+            //get the index of the diseaseTreeIndex
+            const diseaseTreeIndex = updatedAlgorithmTree.findIndex(alg => alg.disease_id === diseaseAlgorithmTree.disease_id);
+    
+            
+            //if node of tree does exist. I think this parts only adds the next steps (since some disease triggered does not have next steps available)
+            if(existingAlgorithmNodeIndex !== -1){
+              //this only works if this is a pass by reference
+              const existingDiseaseAlgorithmNodes = updatedAlgorithmTree[diseaseTreeIndex].DiseaseAlgorithmNodes;
+              existingDiseaseAlgorithmNodes[existingAlgorithmNodeIndex].next_steps = updated_next_steps_ids;
+              //if id not found, then make new one
+            }else{
+              // Ensure DiseaseAlgorithmNodes is initialized before pushing
+            if (!updatedAlgorithmTree[diseaseTreeIndex].DiseaseAlgorithmNodes) {
+              updatedAlgorithmTree[diseaseTreeIndex].DiseaseAlgorithmNodes = [];
+            }
+              
+              updatedAlgorithmTree[diseaseTreeIndex].DiseaseAlgorithmNodes.push({
+                disease_algorithm_id: updated_disease_algorithm_ID,
+                next_steps: updated_next_steps_ids,
+              });
             }
           }
-        );
-        
-        const updated_disease_algorithm_ID: number = disease_algorithm_response.data["test_id"];
-        const updated_next_steps_ids: number[] = disease_algorithm_response.data["next_steps_ids"];
-
-        //this is if i only want one algorithm for disease
-        //const existingAlgorithmIndex = updatedAlgorithms.findIndex(alg => alg.disease_id === diseaseAlgorithm.id);
-
-        // 1. Find the disease of the tree
-        // 2. Find the index of node of the tree to see if it exists
-
-        const existingDiseaseAlgorithmNodes = diseaseAlgorithmTree.DiseaseAlgorithmNodes ?? [];
-
-        const existingAlgorithmNodeIndex = existingDiseaseAlgorithmNodes.findIndex(alg => alg.disease_algorithm_id === updated_disease_algorithm_ID);
-        //get the index of the diseaseTreeIndex
-        const diseaseTreeIndex = updatedAlgorithmTree.findIndex(alg => alg.disease_id === diseaseAlgorithmTree.disease_id);
-
-        
-        //if node of tree does exist. I think this parts only adds the next steps (since some disease triggered does not have next steps available)
-        if(existingAlgorithmNodeIndex !== -1){
-          //this only works if this is a pass by reference
-          const existingDiseaseAlgorithmNodes = updatedAlgorithmTree[diseaseTreeIndex].DiseaseAlgorithmNodes;
-          existingDiseaseAlgorithmNodes[existingAlgorithmNodeIndex].next_steps = updated_next_steps_ids;
-          //if id not found, then make new one
-        }else{
-          // Ensure DiseaseAlgorithmNodes is initialized before pushing
-        if (!updatedAlgorithmTree[diseaseTreeIndex].DiseaseAlgorithmNodes) {
-          updatedAlgorithmTree[diseaseTreeIndex].DiseaseAlgorithmNodes = [];
-        }
+            // means it's already in prev
+          }
           
-          updatedAlgorithmTree[diseaseTreeIndex].DiseaseAlgorithmNodes.push({
-            disease_algorithm_id: updated_disease_algorithm_ID,
-            next_steps: updated_next_steps_ids,
-          });
-        }
-
-      }
+       
       console.log("Updated algorithm tree: ", updatedAlgorithmTree);
+        //Find the algorithm trees
+
+
       return updatedAlgorithmTree;
     } catch (error: any) {
       console.error('Error fetching disease algorithms: ', error.response.data);
@@ -199,8 +224,11 @@ export default function MainComponent() {
   }
 
   useEffect(() =>{
-    console.log("Disease Algorithm Investigating change: ", JSON.parse(JSON.stringify(diseaseAlgorithmsInvestigating || [])));
+    getMatchingTriggerChecklists();
+  }, [selectedSymptoms])
 
+  useEffect(() =>{
+    console.log("prev diseaseAlgorithm ref: ", JSON.parse(JSON.stringify(prevDiseaseAlgorithmsInvestigatingRef.current)), " current ", JSON.parse(JSON.stringify(diseaseAlgorithmsInvestigating)));
   }, [diseaseAlgorithmsInvestigating])
 
   //this activates whenever updating diseaseAlgorithmInvestigating
@@ -209,23 +237,27 @@ export default function MainComponent() {
     if (diseaseAlgorithmsInvestigating.length > 0) {
       const fetchData = async () => {
         const updatedAlgorithmsTrees = await getDiseaseAlgorithms();
-
-        console.log("Re-see updated algorithms value: ", JSON.parse(JSON.stringify(updatedAlgorithmsTrees)));
          // Compare before setting state to prevent unnecessary updates
          console.log("Current disease algorithms investigating: ", JSON.parse(JSON.stringify(diseaseAlgorithmsInvestigating)));
         if (JSON.stringify(updatedAlgorithmsTrees) != JSON.stringify(diseaseAlgorithmsInvestigating)) {
           console.log("Disease Algorithms Investigating in Main: ", updatedAlgorithmsTrees);
           setDiseaseAlgorithmsInvestigating(updatedAlgorithmsTrees);
-          
+          prevDiseaseAlgorithmsInvestigatingRef.current = updatedAlgorithmsTrees;
         }
       };
       fetchData(); // Call the async function inside useEffect
     }
   }, [diseaseAlgorithmsInvestigating]);
 
+  //when click through the next steps
   const updatedSelectedNextStep = (diseaseID: number, selectedNextStepIDs: number[]) =>{
-    console.log("Disease tree before next step button: ", diseaseAlgorithmsInvestigating);
-    console.log("updating selected next steps with ", selectedNextStepIDs, " and disease ID: ", diseaseID);
+    const prevSnapshot = structuredClone(diseaseAlgorithmsInvestigating);
+    prevDiseaseAlgorithmsInvestigatingRef.current = prevSnapshot;
+
+    console.log("Disease Tree prev snapshot: ", JSON.stringify(prevSnapshot));
+    console.log("Disease tree before next step button: ", JSON.stringify(diseaseAlgorithmsInvestigating));
+
+
     setDiseaseAlgorithmsInvestigating((prev) => {
       return prev.map((diseaseAlgorithmTree) =>
       diseaseAlgorithmTree.disease_id === diseaseID 
@@ -258,7 +290,6 @@ export default function MainComponent() {
       {/* Potential could remove and also make this a next steps selection. However logic could be tricky. 
       Can implement the display of buttons with the next steps though */}
       <FinalResults Result = "Results" onRemoveResults={handleRemoveFinalResults}></FinalResults>
-      <Button onClick={getMatchingTriggerChecklists}>Submit</Button>
     </div>
   );
 }
