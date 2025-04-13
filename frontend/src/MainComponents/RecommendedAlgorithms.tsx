@@ -50,25 +50,22 @@ export default function RecommendedAlgorithms({disease_algorithms_trees, updateS
         console.error("disease_algorithms_tree is not an array", disease_algorithms_trees);
         return;
       }
+
+      
   
       try {
         const newDisplayDiseaseAlgorithms = [];
-        console.log("Disease Trees: ", JSON.parse(JSON.stringify(disease_algorithms_trees)));
         for (let index = 0; index < disease_algorithms_trees.length; index++) {
           const disease_algorithms_tree = disease_algorithms_trees[index];
-          console.log("Processing disease algorithm tree at index:", index);
-          console.log("Disease Tree: ", disease_algorithms_trees[0].DiseaseAlgorithmNodes);
-          console.log("Disease Alg Node Length: ", disease_algorithms_trees[0].DiseaseAlgorithmNodes.length);
   
           const diseaseAlgorithmNodes = Array.isArray(disease_algorithms_tree.DiseaseAlgorithmNodes)
             ? disease_algorithms_tree.DiseaseAlgorithmNodes
             : [];
-  
-          console.log("Disease Algorithm Nodes Length at index ", index, ": ", diseaseAlgorithmNodes.length);
-  
+          
+
+          //get each node data
           const nodesData = await Promise.all(
             diseaseAlgorithmNodes.map(async (disease_algorithm_node) => {
-              console.log("Disease Algorithm Node at index ", index, ": ", disease_algorithm_node);
   
               const disease_algorithm_response = await axios.get("http://localhost:8000/api/main/showDiseaseAlgorithms/", {
                 params: { id: disease_algorithm_node.disease_algorithm_id },
@@ -136,7 +133,10 @@ export default function RecommendedAlgorithms({disease_algorithms_trees, updateS
   };
 
   const nextStepButtonSelection = async(nextStepID: number, diseaseID: number, isSelected: boolean) =>{
-    const selectedDiseaseAlgorithmTree = disease_algorithms_trees.find(tree => tree.disease_id === diseaseID);
+    //was doing this by reference at first and so didn't work (made things worked out of order in MainComponents)
+    const copy_disease_algorithms_trees = structuredClone(disease_algorithms_trees);
+
+    const selectedDiseaseAlgorithmTree = copy_disease_algorithms_trees.find(tree => tree.disease_id === diseaseID);
     let currentSelectedNextSteps = selectedDiseaseAlgorithmTree?.selected_next_steps ?? [];
     //console.log("Current selected next steps before altering: ", currentSelectedNextSteps);
     //if selected and selected step does not already have this selected next steps, then add to it
