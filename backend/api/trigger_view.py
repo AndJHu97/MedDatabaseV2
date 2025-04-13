@@ -6,6 +6,7 @@ from .serializers import DiseaseSerializer, SymptomsSerializer, TriggerChecklist
 from django.views.decorators.csrf import csrf_exempt
 from django.shortcuts import get_object_or_404
 import json
+from django.db.models import Q
 
 @api_view(['GET'])
 def showSelectionType(request):
@@ -60,6 +61,5 @@ def PostTriggerForm(request):
         else:
             print(triggerChecklistSerializer.errors)
             return Response(triggerChecklistSerializer.errors, status=400)
-
 
 

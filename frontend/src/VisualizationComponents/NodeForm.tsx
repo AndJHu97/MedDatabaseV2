@@ -434,7 +434,7 @@ function NodeForm({ selectedNodeId,  selectedLinkInfo, updateForm, onUpdateTree}
           Cancel
         </button>
       </div>
-    )}
+    )}``
     </form>
   );
 }
