@@ -39,7 +39,7 @@ interface RecommendedStepsDataProp {
 }
 
 export default function RecommendedStepsSelections({ name, TriggerNextSteps, TriggerChecklists }: RecommendedStepsDataProp) {
-  const [areRecommendedStepsVisible, setAreRecommendedStepsVisible] = useState(false);
+  const [areRecommendedStepsVisible, setAreRecommendedStepsVisible] = useState(true);
   const [symptomNames, setSymptomNames] = useState<Record<number, string>>({});
   const [diseaseNames, setDiseaseNames] = useState<Record<number, string>>({});
 
@@ -98,7 +98,7 @@ export default function RecommendedStepsSelections({ name, TriggerNextSteps, Tri
         onClick={toggleRecommendedStepsVisibility}
         style={{ display: "flex", alignItems: "center", userSelect: "none" }}
       >
-        Suggested {name + " "}
+        {name + " "}
         <span style={{ marginLeft: "8px" }}>{areRecommendedStepsVisible ? "▲" : "▼"}</span>
       </h4>
 

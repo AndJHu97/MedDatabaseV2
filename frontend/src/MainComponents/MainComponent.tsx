@@ -90,7 +90,7 @@ export default function MainComponent() {
       //if the diseases triggered are already being investigated, don't search through them
       const investigatingDiseaseIds = diseaseAlgorithmsInvestigating.map(alg => alg.disease_id).sort();
       const newTriggeredDiseaseIds = matched_triggers_response.data["diseases_ids_triggered"].slice().sort();
-
+      console.log("Updated diseases triggered: ", newTriggeredDiseaseIds);
       if (JSON.stringify(investigatingDiseaseIds) === JSON.stringify(newTriggeredDiseaseIds)) {
         console.log("Same diseases already being investigated. Skipping update.");
         return;
@@ -177,8 +177,7 @@ export default function MainComponent() {
             const updated_disease_algorithm_ID: number = disease_algorithm_response.data["test_id"];
             const updated_next_steps_ids: number[] = disease_algorithm_response.data["next_steps_ids"];
     
-            //this is if i only want one algorithm for disease
-            //const existingAlgorithmIndex = updatedAlgorithms.findIndex(alg => alg.disease_id === diseaseAlgorithm.id);
+            //this is if i only want one algorithm tree for disease
     
             // 1. Find the disease of the tree
             // 2. Find the index of node of the tree to see if it exists
@@ -192,20 +191,29 @@ export default function MainComponent() {
             
             //if node of tree does exist. I think this parts only adds the next steps (since some disease triggered does not have next steps available)
             if(existingAlgorithmNodeIndex !== -1){
+              console.log("Algorithm index: ", existingAlgorithmNodeIndex);
+              //Take out disease algorithm nodes no longer relevant
+              //1. Since updated disease alg ID is in the existing disease algorithm nodes, then you aren't adding new alg. You're taking away an alg
+              //2. Take out any nodes after index of the updated disease alg ID
               //this only works if this is a pass by reference
               const existingDiseaseAlgorithmNodes = updatedAlgorithmTree[diseaseTreeIndex].DiseaseAlgorithmNodes;
+
+              updatedAlgorithmTree[diseaseTreeIndex].DiseaseAlgorithmNodes = existingDiseaseAlgorithmNodes.filter((_,index) => 
+                index <= existingAlgorithmNodeIndex
+              ); 
+              
               existingDiseaseAlgorithmNodes[existingAlgorithmNodeIndex].next_steps = updated_next_steps_ids;
               //if id not found, then make new one
             }else{
               // Ensure DiseaseAlgorithmNodes is initialized before pushing
-            if (!updatedAlgorithmTree[diseaseTreeIndex].DiseaseAlgorithmNodes) {
-              updatedAlgorithmTree[diseaseTreeIndex].DiseaseAlgorithmNodes = [];
-            }
-              
-              updatedAlgorithmTree[diseaseTreeIndex].DiseaseAlgorithmNodes.push({
-                disease_algorithm_id: updated_disease_algorithm_ID,
-                next_steps: updated_next_steps_ids,
-              });
+              if (!updatedAlgorithmTree[diseaseTreeIndex].DiseaseAlgorithmNodes) {
+                updatedAlgorithmTree[diseaseTreeIndex].DiseaseAlgorithmNodes = [];
+              }
+                
+                updatedAlgorithmTree[diseaseTreeIndex].DiseaseAlgorithmNodes.push({
+                  disease_algorithm_id: updated_disease_algorithm_ID,
+                  next_steps: updated_next_steps_ids,
+                });
             }
           }
             // means it's already in prev
@@ -234,7 +242,7 @@ export default function MainComponent() {
   //this activates whenever updating diseaseAlgorithmInvestigating
   useEffect(() => {
     //console.log("Current disease algorithms investigating: ", previousAlgorithmsTrees);
-    if (diseaseAlgorithmsInvestigating.length > 0) {
+    if (diseaseAlgorithmsInvestigating.length > 0 || prevDiseaseAlgorithmsInvestigatingRef.current.length > 0) {
       const fetchData = async () => {
         const updatedAlgorithmsTrees = await getDiseaseAlgorithms();
          // Compare before setting state to prevent unnecessary updates
@@ -279,11 +287,11 @@ export default function MainComponent() {
         onRemoveSymptom={handleRemoveSelectedSymptom}
       />
       <br></br>
-      <RecommendedStepsSelections name = "Positive Next Steps" TriggerNextSteps={positiveNextSteps} TriggerChecklists={null}></RecommendedStepsSelections>
+      <RecommendedStepsSelections name = "1a. Symptoms to Rule In" TriggerNextSteps={positiveNextSteps} TriggerChecklists={null}></RecommendedStepsSelections>
       <br></br>
-      <RecommendedStepsSelections name = "Negative Next Steps" TriggerNextSteps={negativeNextSteps} TriggerChecklists={null}></RecommendedStepsSelections>
+      <RecommendedStepsSelections name = "1b. Symptoms to Rule Out" TriggerNextSteps={negativeNextSteps} TriggerChecklists={null}></RecommendedStepsSelections>
       <br></br>
-      <RecommendedStepsSelections name = "Triggers"  TriggerNextSteps={null} TriggerChecklists={matchedTriggers}></RecommendedStepsSelections>
+      <RecommendedStepsSelections name = "Recommended Diseases to Investigate"  TriggerNextSteps={null} TriggerChecklists={matchedTriggers}></RecommendedStepsSelections>
       <br></br>
       <RecommendedAlgorithms disease_algorithms_trees={diseaseAlgorithmsInvestigating} updateSelectedNextStepSelection={updatedSelectedNextStep} ></RecommendedAlgorithms>
       <br></br>

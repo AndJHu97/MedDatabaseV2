@@ -39,7 +39,7 @@ interface DisplayDiseaseAlgorithm{
 }
 
 export default function RecommendedAlgorithms({disease_algorithms_trees, updateSelectedNextStepSelection}: RecommendedAlgorithmDataProp) {
-  const [areRecommendedStepsVisible, setAreRecommendedStepsVisible] = useState(false);
+  const [areRecommendedStepsVisible, setAreRecommendedStepsVisible] = useState(true);
   const [diseaseAlgorithmDisplay, setDiseaseAlgorithmDisplay] = useState<DisplayDiseaseAlgorithm[]>([]);
   
   //get all the disease algorithm relevant information into diseaseAlgorithmInvestigating (need to create new interface for them with DisplayDiseaseAlgorithm)
@@ -118,9 +118,7 @@ export default function RecommendedAlgorithms({disease_algorithms_trees, updateS
       }
     };
   
-    if (disease_algorithms_trees.length > 0) {
-      fetchDiseaseAlgorithms();
-    }
+    fetchDiseaseAlgorithms();
   }, [disease_algorithms_trees]); // Dependency array to run when disease_algorithms changes
   
 
@@ -166,7 +164,7 @@ export default function RecommendedAlgorithms({disease_algorithms_trees, updateS
         onClick={toggleRecommendedStepsVisibility}
         style={{ display: "flex", alignItems: "center", userSelect: "none" }}
       >
-        Suggested Algorithms
+        2. Suspected Disease Diagnostic Workflow
         <span style={{ marginLeft: "8px" }}>
           {areRecommendedStepsVisible ? "▲" : "▼"}
         </span>
@@ -192,7 +190,7 @@ export default function RecommendedAlgorithms({disease_algorithms_trees, updateS
               >
                 {diseaseName}
               </h4>
-              {algorithms.map((algorithm) => (
+              {algorithms.map((algorithm, index) => (
                 <div key={algorithm.algorithm_id} style={{ marginLeft: "20px" }}>
                   <h5
                     style={{
@@ -222,6 +220,12 @@ export default function RecommendedAlgorithms({disease_algorithms_trees, updateS
                           const isSelected = algorithm.selected_next_steps.some(
                             (selectedStep) => selectedStep.id === next_step.id
                           );
+
+                          //check if this last and second to last disease node (can only be selectable if it has already been selected) so only those can be edited
+                          var isSelectable = false;
+                          if((index == algorithms.length - 2 && isSelected) || index == algorithms.length - 1 || algorithms.length == 1){
+                            isSelectable = true;
+                          }
   
                           return (
                             //Change selection button to be pressed
@@ -230,6 +234,7 @@ export default function RecommendedAlgorithms({disease_algorithms_trees, updateS
                               nextStepID={next_step.id} // Use next_step.id as id
                               diseaseID={algorithm.disease_id}
                               name={next_step.ConditionsForNextStep} // Use next_step.name as button label
+                              isSelectable = {isSelectable}
                               onSelection={nextStepButtonSelection}
                             />
                           );
