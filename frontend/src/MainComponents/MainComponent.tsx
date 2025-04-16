@@ -90,7 +90,7 @@ export default function MainComponent() {
       //if the diseases triggered are already being investigated, don't search through them
       const investigatingDiseaseIds = diseaseAlgorithmsInvestigating.map(alg => alg.disease_id).sort();
       const newTriggeredDiseaseIds = matched_triggers_response.data["diseases_ids_triggered"].slice().sort();
-
+      console.log("Updated diseases triggered: ", newTriggeredDiseaseIds);
       if (JSON.stringify(investigatingDiseaseIds) === JSON.stringify(newTriggeredDiseaseIds)) {
         console.log("Same diseases already being investigated. Skipping update.");
         return;
@@ -242,7 +242,7 @@ export default function MainComponent() {
   //this activates whenever updating diseaseAlgorithmInvestigating
   useEffect(() => {
     //console.log("Current disease algorithms investigating: ", previousAlgorithmsTrees);
-    if (diseaseAlgorithmsInvestigating.length > 0) {
+    if (diseaseAlgorithmsInvestigating.length > 0 || prevDiseaseAlgorithmsInvestigatingRef.current.length > 0) {
       const fetchData = async () => {
         const updatedAlgorithmsTrees = await getDiseaseAlgorithms();
          // Compare before setting state to prevent unnecessary updates
@@ -287,11 +287,11 @@ export default function MainComponent() {
         onRemoveSymptom={handleRemoveSelectedSymptom}
       />
       <br></br>
-      <RecommendedStepsSelections name = "Positive Next Steps" TriggerNextSteps={positiveNextSteps} TriggerChecklists={null}></RecommendedStepsSelections>
+      <RecommendedStepsSelections name = "1a. Symptoms to Rule In" TriggerNextSteps={positiveNextSteps} TriggerChecklists={null}></RecommendedStepsSelections>
       <br></br>
-      <RecommendedStepsSelections name = "Negative Next Steps" TriggerNextSteps={negativeNextSteps} TriggerChecklists={null}></RecommendedStepsSelections>
+      <RecommendedStepsSelections name = "1b. Symptoms to Rule Out" TriggerNextSteps={negativeNextSteps} TriggerChecklists={null}></RecommendedStepsSelections>
       <br></br>
-      <RecommendedStepsSelections name = "Triggers"  TriggerNextSteps={null} TriggerChecklists={matchedTriggers}></RecommendedStepsSelections>
+      <RecommendedStepsSelections name = "Recommended Diseases to Investigate"  TriggerNextSteps={null} TriggerChecklists={matchedTriggers}></RecommendedStepsSelections>
       <br></br>
       <RecommendedAlgorithms disease_algorithms_trees={diseaseAlgorithmsInvestigating} updateSelectedNextStepSelection={updatedSelectedNextStep} ></RecommendedAlgorithms>
       <br></br>

@@ -39,7 +39,7 @@ interface DisplayDiseaseAlgorithm{
 }
 
 export default function RecommendedAlgorithms({disease_algorithms_trees, updateSelectedNextStepSelection}: RecommendedAlgorithmDataProp) {
-  const [areRecommendedStepsVisible, setAreRecommendedStepsVisible] = useState(false);
+  const [areRecommendedStepsVisible, setAreRecommendedStepsVisible] = useState(true);
   const [diseaseAlgorithmDisplay, setDiseaseAlgorithmDisplay] = useState<DisplayDiseaseAlgorithm[]>([]);
   
   //get all the disease algorithm relevant information into diseaseAlgorithmInvestigating (need to create new interface for them with DisplayDiseaseAlgorithm)
@@ -118,9 +118,7 @@ export default function RecommendedAlgorithms({disease_algorithms_trees, updateS
       }
     };
   
-    if (disease_algorithms_trees.length > 0) {
-      fetchDiseaseAlgorithms();
-    }
+    fetchDiseaseAlgorithms();
   }, [disease_algorithms_trees]); // Dependency array to run when disease_algorithms changes
   
 
@@ -166,7 +164,7 @@ export default function RecommendedAlgorithms({disease_algorithms_trees, updateS
         onClick={toggleRecommendedStepsVisibility}
         style={{ display: "flex", alignItems: "center", userSelect: "none" }}
       >
-        Suggested Algorithms
+        2. Suspected Disease Diagnostic Workflow
         <span style={{ marginLeft: "8px" }}>
           {areRecommendedStepsVisible ? "▲" : "▼"}
         </span>
