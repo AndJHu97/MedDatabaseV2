@@ -177,8 +177,7 @@ export default function MainComponent() {
             const updated_disease_algorithm_ID: number = disease_algorithm_response.data["test_id"];
             const updated_next_steps_ids: number[] = disease_algorithm_response.data["next_steps_ids"];
     
-            //this is if i only want one algorithm for disease
-            //const existingAlgorithmIndex = updatedAlgorithms.findIndex(alg => alg.disease_id === diseaseAlgorithm.id);
+            //this is if i only want one algorithm tree for disease
     
             // 1. Find the disease of the tree
             // 2. Find the index of node of the tree to see if it exists
@@ -192,20 +191,29 @@ export default function MainComponent() {
             
             //if node of tree does exist. I think this parts only adds the next steps (since some disease triggered does not have next steps available)
             if(existingAlgorithmNodeIndex !== -1){
+              console.log("Algorithm index: ", existingAlgorithmNodeIndex);
+              //Take out disease algorithm nodes no longer relevant
+              //1. Since updated disease alg ID is in the existing disease algorithm nodes, then you aren't adding new alg. You're taking away an alg
+              //2. Take out any nodes after index of the updated disease alg ID
               //this only works if this is a pass by reference
               const existingDiseaseAlgorithmNodes = updatedAlgorithmTree[diseaseTreeIndex].DiseaseAlgorithmNodes;
+
+              updatedAlgorithmTree[diseaseTreeIndex].DiseaseAlgorithmNodes = existingDiseaseAlgorithmNodes.filter((_,index) => 
+                index <= existingAlgorithmNodeIndex
+              ); 
+              
               existingDiseaseAlgorithmNodes[existingAlgorithmNodeIndex].next_steps = updated_next_steps_ids;
               //if id not found, then make new one
             }else{
               // Ensure DiseaseAlgorithmNodes is initialized before pushing
-            if (!updatedAlgorithmTree[diseaseTreeIndex].DiseaseAlgorithmNodes) {
-              updatedAlgorithmTree[diseaseTreeIndex].DiseaseAlgorithmNodes = [];
-            }
-              
-              updatedAlgorithmTree[diseaseTreeIndex].DiseaseAlgorithmNodes.push({
-                disease_algorithm_id: updated_disease_algorithm_ID,
-                next_steps: updated_next_steps_ids,
-              });
+              if (!updatedAlgorithmTree[diseaseTreeIndex].DiseaseAlgorithmNodes) {
+                updatedAlgorithmTree[diseaseTreeIndex].DiseaseAlgorithmNodes = [];
+              }
+                
+                updatedAlgorithmTree[diseaseTreeIndex].DiseaseAlgorithmNodes.push({
+                  disease_algorithm_id: updated_disease_algorithm_ID,
+                  next_steps: updated_next_steps_ids,
+                });
             }
           }
             // means it's already in prev

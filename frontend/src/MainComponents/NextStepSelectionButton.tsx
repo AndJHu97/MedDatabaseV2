@@ -4,17 +4,21 @@ interface SelectionButtonProps{
     name: string;
     nextStepID: number;
     diseaseID: number;
+    isSelectable: boolean;
     onSelection: (nextStepID: number, diseaseAlgorithmIndex: number, isSelected: boolean) => void;
 }
 
-export default function NextStepSelectionButton({name, nextStepID, diseaseID, onSelection}: SelectionButtonProps){
+export default function NextStepSelectionButton({name, nextStepID, diseaseID, isSelectable, onSelection}: SelectionButtonProps){
   const [isSelected, setIsSelected] = useState(false);
   
   const selectingButton = () =>{
-    setIsSelected((prev) => !prev);
+    if(isSelectable){
+      setIsSelected((prev) => !prev);
 
     //send selection
     onSelection(nextStepID, diseaseID, !isSelected);
+    }
+    
   }
 
 
