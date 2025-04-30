@@ -113,6 +113,7 @@ export default function RecommendedStepsSelections({ name, TriggerNextSteps, Tri
                     <SelectionButton
                       key={step.symptom_id}
                       id={step.symptom_id}
+                      isSymptomSelectable = {true}
                       name={symptomNames[step.symptom_id] || `Symptom ${step.symptom_id}`}
                       onRemoveSelection={() => {}}
                     />

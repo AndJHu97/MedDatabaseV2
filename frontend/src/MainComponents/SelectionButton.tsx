@@ -1,15 +1,33 @@
-import React from "react"
+import {useContext} from "react"
+import { SymptomsContext } from "./Context/SymptomContext";
 
 interface SelectionButtonProps{
     name: string;
     id: number;
+    isSymptomSelectable: boolean;
     onRemoveSelection: (id: number) => void;
 }
 
-export default function SelectionButton({name, id, onRemoveSelection}: SelectionButtonProps){
-    return(
+interface Symptom {
+  id: number;
+  Name: string;
+}
+
+export default function SelectionButton({name, id, isSymptomSelectable, onRemoveSelection}: SelectionButtonProps){
+  
+  const { setSelectedSymptoms } = useContext(SymptomsContext);
+  const addSymptom = () =>{
+    setSelectedSymptoms((prev: Symptom[]) => {
+      if (prev.some(symptom => symptom.id === id)) return prev;
+      return [...prev, { id, Name: name }];
+
+    })
+  }
+  
+  return(
         <div
           key={id}
+          onClick = {() => addSymptom()}
           style={{
             display: "flex",
             alignItems: "center",
@@ -20,6 +38,7 @@ export default function SelectionButton({name, id, onRemoveSelection}: Selection
           }}
         >
           <span>{name}</span>
+          {!isSymptomSelectable && 
           <button
             onClick={() => onRemoveSelection(id)}
             style={{
@@ -33,6 +52,7 @@ export default function SelectionButton({name, id, onRemoveSelection}: Selection
           >
             ×
           </button>
+        }
         </div>
     );
 }

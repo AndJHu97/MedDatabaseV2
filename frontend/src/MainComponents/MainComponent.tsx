@@ -6,6 +6,7 @@ import FinalResults from "./FinalResults";
 import axios from 'axios';
 import { Button } from "react-bootstrap";
 import RecommendedAlgorithms from "./RecommendedAlgorithms";
+import {SymptomsContext} from "./Context/SymptomContext";
 
 interface Symptom {
   id: number;
@@ -75,7 +76,7 @@ export default function MainComponent() {
   //matching algorithms also trigger the disease algorithms it triggers
   const getMatchingTriggerChecklists = async () => {
     try {
-
+      //Make sure it doesn't trigger error
       const symptomIds = selectedSymptoms.map(symptom => symptom.id); 
       const matched_triggers_response = await axios.get('http://localhost:8000/api/main/getMatchedDefaultTriggers/', {
         params: { symptom_ids: symptomIds.join(',') }
@@ -287,12 +288,14 @@ export default function MainComponent() {
         onRemoveSymptom={handleRemoveSelectedSymptom}
       />
       <br></br>
-      <RecommendedStepsSelections name = "1a. Symptoms to Rule In" TriggerNextSteps={positiveNextSteps} TriggerChecklists={null}></RecommendedStepsSelections>
-      <br></br>
-      <RecommendedStepsSelections name = "1b. Symptoms to Rule Out" TriggerNextSteps={negativeNextSteps} TriggerChecklists={null}></RecommendedStepsSelections>
-      <br></br>
-      <RecommendedStepsSelections name = "Recommended Diseases to Investigate"  TriggerNextSteps={null} TriggerChecklists={matchedTriggers}></RecommendedStepsSelections>
-      <br></br>
+      <SymptomsContext.Provider value = {{selectedSymptoms, setSelectedSymptoms}}>
+        <RecommendedStepsSelections name = "1a. Symptoms to Rule In" TriggerNextSteps={positiveNextSteps} TriggerChecklists={null}></RecommendedStepsSelections>
+        <br></br>
+        <RecommendedStepsSelections name = "1b. Symptoms to Rule Out" TriggerNextSteps={negativeNextSteps} TriggerChecklists={null}></RecommendedStepsSelections>
+        <br></br>
+        <RecommendedStepsSelections name = "Recommended Diseases to Investigate"  TriggerNextSteps={null} TriggerChecklists={matchedTriggers}></RecommendedStepsSelections>
+        <br></br>
+      </SymptomsContext.Provider>
       <RecommendedAlgorithms disease_algorithms_trees={diseaseAlgorithmsInvestigating} updateSelectedNextStepSelection={updatedSelectedNextStep} ></RecommendedAlgorithms>
       <br></br>
       {/* Potential could remove and also make this a next steps selection. However logic could be tricky. 

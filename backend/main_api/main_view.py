@@ -2,8 +2,8 @@ from rest_framework import status
 from rest_framework.response import Response
 from django.http import JsonResponse
 from rest_framework.decorators import api_view
-from main.models import TriggerChecklist, Symptoms, SelectionType, Disease, DiseaseAlgorithm, NextStep
-from .main_serializers import DiseaseSerializer, SymptomsSerializer, TriggerChecklistSerializer, NextStepsSerializer, DiseaseAlgorithmSerializer, DiagnosisSerializer, SelectionTypeSerializer
+from main.models import TriggerChecklist, Symptoms, SelectionType, Disease, DiseaseAlgorithm, NextStep, ExamType
+from .main_serializers import DiseaseSerializer, SymptomsSerializer, TriggerChecklistSerializer, NextStepsSerializer, DiseaseAlgorithmSerializer, ExamTypeSerializer
 from django.views.decorators.csrf import csrf_exempt
 from django.shortcuts import get_object_or_404
 import json
@@ -15,6 +15,13 @@ def showSymptoms(request):
         symptoms = Symptoms.objects.all()
         symptomsSerializer = SymptomsSerializer(symptoms, many = True)
         return Response(symptomsSerializer.data)
+    
+@api_view(['GET'])
+def showExamTypes(request):
+    if request.method == 'GET':
+        examType = ExamType.objects.all()
+        examTypeSerializer = ExamTypeSerializer(examType, many = True)
+        return Response(examTypeSerializer.data)
     
 @api_view(['GET'])
 def showDiseases(request):

@@ -241,18 +241,20 @@ def deleteNode(request):
 def add_symptom(request):
     if request.method == 'POST':
         symptom_name = request.data.get('name')
+        symptom_exam_type_id = request.data.get('examTypeID')
         
         if not symptom_name:
             return JsonResponse({'error': 'Name is required'}, status=400)
         
         symptom_data = {
-            'Name': symptom_name
+            'Name': symptom_name,
+            'ExamType': symptom_exam_type_id
         }
 
         symptomAlgorithmSerialized = SymptomsSerializer(data = symptom_data)
         if symptomAlgorithmSerialized.is_valid():
             symptomAlgorithmSerialized = symptomAlgorithmSerialized.save()
-            return JsonResponse({'id': symptomAlgorithmSerialized.id, 'Name': symptomAlgorithmSerialized.Name}, status=201)
+            return JsonResponse(SymptomsSerializer(symptomAlgorithmSerialized).data, status=201)
         return JsonResponse({"Could not save symptom"}, status = 404)
 
 @api_view(['POST'])
