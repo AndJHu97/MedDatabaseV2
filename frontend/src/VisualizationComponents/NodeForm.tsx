@@ -24,6 +24,7 @@ function NodeForm({ selectedNodeId,  selectedLinkInfo, updateForm, onUpdateTree}
     SelectedNodeId: '',
     DiseaseId: '',
     Diagnosis:'',
+    Source: '',
     //DA: DiseaseAlgorithm
     DAExamType: ''
   });
@@ -161,6 +162,7 @@ function NodeForm({ selectedNodeId,  selectedLinkInfo, updateForm, onUpdateTree}
           Notes:'',
           Triggers: '',
           Diagnosis: '',
+          Source: '',
           //DA: DiseaseAlgorithm
           DAExamType: ''
         }));
@@ -218,9 +220,9 @@ function NodeForm({ selectedNodeId,  selectedLinkInfo, updateForm, onUpdateTree}
    };
  
    const handleUpdateNodeClick = async () => {
-    const {TestName: Name, Notes, Triggers,  DAExamType: ExamType, Diagnosis} = formData;
+    const {TestName: Name, Notes, Triggers,  DAExamType: ExamType, Diagnosis, Source} = formData;
     const updatedNodeInfo = {
-      Name, Notes, Triggers, ExamType, Diagnosis,
+      Name, Notes, Triggers, ExamType, Diagnosis, Source,
       "selectedNodeId": selectedNodeId[0]};
     try{
       const updatedNodeInfoJSON = JSON.stringify(updatedNodeInfo);
@@ -402,6 +404,19 @@ function NodeForm({ selectedNodeId,  selectedLinkInfo, updateForm, onUpdateTree}
           ))}
         </select>
       </div>
+
+      <div className="mb-3">
+        <label htmlFor="source" className="form-label">Source:</label>
+        <input
+          type="text"
+          className="form-control"
+          id="Source"
+          name="Source"
+          value={formData.Source}
+          onChange={handleChange}
+        />
+      </div>
+
       <button type="submit" className="btn btn-primary">Submit Form</button>
       <button type="button" className="btn btn-primary" onClick={handleUpdateNodeClick} disabled = {selectedNodeId[0] == null || !updateForm}>Update Node</button>
       <button type="button" className="btn btn-primary" onClick={handleUpdateLinkClick} disabled = {selectedLinkInfo[0] == null || !updateForm}>Update Link</button>

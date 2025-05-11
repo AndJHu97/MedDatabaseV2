@@ -16,6 +16,7 @@ interface Symptom {
 interface NextSteps{
   symptom_id: number;
   trigger_name: string;
+  source: string;
 }
 
 interface TriggerChecklist {

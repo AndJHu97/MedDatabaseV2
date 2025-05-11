@@ -29,6 +29,7 @@ class TriggerChecklist(models.Model):
     SelectionType = models.ForeignKey('SelectionType', on_delete=models.CASCADE, null=True, blank = True)
     SelectionAdditionalInfo = models.CharField(max_length=255, null=True, blank = True)
     GeneralAdditionalInfo = models.CharField(max_length=255, null=True, blank = True)
+    Source = models.CharField(max_length=255, null=True, blank = True)
     Disease = models.ForeignKey('Disease', on_delete=models.CASCADE, null=True, blank = True)
     
 class SelectionType(models.Model):
@@ -68,6 +69,7 @@ class DiseaseAlgorithm(models.Model):
     Disease = models.ForeignKey('Disease', on_delete=models.CASCADE, null=True, blank = True)
     DiseaseName = models.CharField(max_length=255, null=True, blank = True)
     Notes = models.TextField(null=True, blank = True)
+    Source = models.TextField(null=True, blank = True)
     Triggers = models.ManyToManyField(TriggerChecklist, related_name='disease_algorithm', null = True, blank = True)
     NextSteps = models.ManyToManyField(NextStep, related_name = "disease_algorithm", null = True, blank = True)
     ExamType = models.ForeignKey('ExamType', on_delete=models.CASCADE, null=True, blank = True)

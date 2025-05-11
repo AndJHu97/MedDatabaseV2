@@ -65,6 +65,7 @@ def GetAndPostDiseaseAlgorithmDataForForm(request):
             diseaseAlgorithm_data = {
                 'Name': request.data.get('TestName'),
                 'Notes': request.data.get('Notes', ''),
+                'Source': request.data.get('Source',''),
                 'Disease': request.data.get('DiseaseId')
             }
 
@@ -162,6 +163,7 @@ def updateNode(request):
         # Update model
         updateNodeObj.Name = request.data.get('Name')
         updateNodeObj.Notes = request.data.get('Notes')
+        updateNodeObj.Source = request.data.get('Source')
         
         # Update Triggers (Many-to-Many relationship)
         if 'Triggers' in request.data:

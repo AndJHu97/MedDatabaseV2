@@ -5,6 +5,7 @@ import SelectionButton from "./SelectionButton";
 interface NextSteps {
   symptom_id: number;
   trigger_name: string;
+  source: string;
 }
 
 interface Symptom {
@@ -38,6 +39,7 @@ interface RecommendedStepsDataProp {
   TriggerChecklists: TriggerChecklist[] | null;
 }
 
+//if either one is null, it will only focus on the other one
 export default function RecommendedStepsSelections({ name, TriggerNextSteps, TriggerChecklists }: RecommendedStepsDataProp) {
   const [areRecommendedStepsVisible, setAreRecommendedStepsVisible] = useState(true);
   const [symptomNames, setSymptomNames] = useState<Record<number, string>>({});
@@ -107,7 +109,17 @@ export default function RecommendedStepsSelections({ name, TriggerNextSteps, Tri
           {TriggerNextSteps ? (
             Object.entries(groupedNextSteps).map(([triggerName, symptoms]) => (
               <div key={triggerName}>
-                <h5 style={{ color: "#007BFF", fontSize: "18px", marginBottom: "8px" }}>{triggerName}</h5>
+                <h5 style={{ fontSize: "18px", marginBottom: "8px" }}>
+                <a
+                  href={symptoms[0].source}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  style={{ color: "#007BFF", textDecoration: "underline" }}
+                >
+                    {triggerName}
+                  </a>
+                </h5>
+
                 <div style={{ display: "flex", flexWrap: "wrap", gap: "8px" }}>
                   {symptoms.map((step) => (
                     <SelectionButton

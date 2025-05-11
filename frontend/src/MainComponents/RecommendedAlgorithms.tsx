@@ -36,6 +36,7 @@ interface DisplayDiseaseAlgorithm{
   selected_next_steps: NextStep[];
   disease_id: number;
   disease_name: string;
+  source: string;
 }
 
 export default function RecommendedAlgorithms({disease_algorithms_trees, updateSelectedNextStepSelection}: RecommendedAlgorithmDataProp) {
@@ -103,6 +104,7 @@ export default function RecommendedAlgorithms({disease_algorithms_trees, updateS
                 selected_next_steps: selected_next_steps,
                 disease_id: disease_algorithm_response.data.Disease,
                 disease_name: disease_response.data.Name,
+                source: disease_algorithm_response.data.Source
               };
             })
           );
@@ -199,7 +201,9 @@ export default function RecommendedAlgorithms({disease_algorithms_trees, updateS
                     }}
                     className="algorithm-name"
                   >
+                    <a href={algorithm.source} target="_blank" rel="noopener noreferrer">
                     → Test: {algorithm.name}
+                    </a>
                   </h5>
   
                   {/* Next Steps Section */}
