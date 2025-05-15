@@ -24,6 +24,7 @@ function NodeForm({ selectedNodeId,  selectedLinkInfo, updateForm, onUpdateTree}
     SelectedNodeId: '',
     DiseaseId: '',
     Diagnosis:'',
+    Source: '',
     //DA: DiseaseAlgorithm
     DAExamType: ''
   });
@@ -42,6 +43,8 @@ function NodeForm({ selectedNodeId,  selectedLinkInfo, updateForm, onUpdateTree}
 
   //for adding new symptoms
   const [newSymptom, setNewSymptom] = useState('');
+  const [newSymptomExamType, setNewSymptomExamType] = useState("");
+
   const [examTypes, setExamTypes] = useState<PreselectedInputs[]>([]);
   const [triggers, setTrigger] = useState<PreselectedInputs[]>([]);
   const [diagnosis, setDiagnosis] = useState<PreselectedInputs[]>([]);
@@ -159,6 +162,7 @@ function NodeForm({ selectedNodeId,  selectedLinkInfo, updateForm, onUpdateTree}
           Notes:'',
           Triggers: '',
           Diagnosis: '',
+          Source: '',
           //DA: DiseaseAlgorithm
           DAExamType: ''
         }));
@@ -216,9 +220,9 @@ function NodeForm({ selectedNodeId,  selectedLinkInfo, updateForm, onUpdateTree}
    };
  
    const handleUpdateNodeClick = async () => {
-    const {TestName: Name, Notes, Triggers,  DAExamType: ExamType, Diagnosis} = formData;
+    const {TestName: Name, Notes, Triggers,  DAExamType: ExamType, Diagnosis, Source} = formData;
     const updatedNodeInfo = {
-      Name, Notes, Triggers, ExamType, Diagnosis,
+      Name, Notes, Triggers, ExamType, Diagnosis, Source,
       "selectedNodeId": selectedNodeId[0]};
     try{
       const updatedNodeInfoJSON = JSON.stringify(updatedNodeInfo);
@@ -257,7 +261,7 @@ function NodeForm({ selectedNodeId,  selectedLinkInfo, updateForm, onUpdateTree}
   
   const handleAddSymptom = async () => {
     try {
-      const response = await axios.post('http://localhost:8000/api/add_symptom/', { name: newSymptom });
+      const response = await axios.post('http://localhost:8000/api/add_symptom/', { name: newSymptom, examTypeID: newSymptomExamType });
       setSymptoms([...symptoms, response.data]);
       setNewSymptom('');
       setShowNewSymptomForm(false);
@@ -400,6 +404,19 @@ function NodeForm({ selectedNodeId,  selectedLinkInfo, updateForm, onUpdateTree}
           ))}
         </select>
       </div>
+
+      <div className="mb-3">
+        <label htmlFor="source" className="form-label">Source:</label>
+        <input
+          type="text"
+          className="form-control"
+          id="Source"
+          name="Source"
+          value={formData.Source}
+          onChange={handleChange}
+        />
+      </div>
+
       <button type="submit" className="btn btn-primary">Submit Form</button>
       <button type="button" className="btn btn-primary" onClick={handleUpdateNodeClick} disabled = {selectedNodeId[0] == null || !updateForm}>Update Node</button>
       <button type="button" className="btn btn-primary" onClick={handleUpdateLinkClick} disabled = {selectedLinkInfo[0] == null || !updateForm}>Update Link</button>
@@ -419,6 +436,24 @@ function NodeForm({ selectedNodeId,  selectedLinkInfo, updateForm, onUpdateTree}
             onChange={(e) => setNewSymptom(e.target.value)}
           />
         </div>
+
+        <div className="mb-3">
+          <label htmlFor="new-symptom-examtype" className="form-label">Exam Type:</label>
+          <select
+            className="form-control"
+            id="new-symptom-examtype"
+            value={newSymptomExamType}
+            onChange={(e) => setNewSymptomExamType(e.target.value)}
+          >
+            <option value="">Select an Exam Type</option>
+            {examTypes.map((examType) => (
+              <option key={examType.id} value={examType.id}>
+                {examType.Name}
+              </option>
+            ))}
+          </select>
+        </div>
+
         <button
           type="button"
           className="btn btn-primary"

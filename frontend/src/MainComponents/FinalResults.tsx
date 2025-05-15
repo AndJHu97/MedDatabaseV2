@@ -24,7 +24,7 @@ export default function FinalResults({Result, onRemoveResults}: FinalResultsProp
                     backgroundColor: "#f9f9f9",
                 }}
             >
-            <SelectionButton name = {Result} id = {0} onRemoveSelection={onRemoveResults}></SelectionButton>
+            <SelectionButton name = {Result} id = {0} onRemoveSelection={onRemoveResults} isSymptomSelectable = {false}></SelectionButton>
             </div>
         </div>
     );

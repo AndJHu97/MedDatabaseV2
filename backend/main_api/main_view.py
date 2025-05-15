@@ -2,8 +2,8 @@ from rest_framework import status
 from rest_framework.response import Response
 from django.http import JsonResponse
 from rest_framework.decorators import api_view
-from main.models import TriggerChecklist, Symptoms, SelectionType, Disease, DiseaseAlgorithm, NextStep
-from .main_serializers import DiseaseSerializer, SymptomsSerializer, TriggerChecklistSerializer, NextStepsSerializer, DiseaseAlgorithmSerializer, DiagnosisSerializer, SelectionTypeSerializer
+from main.models import TriggerChecklist, Symptoms, SelectionType, Disease, DiseaseAlgorithm, NextStep, ExamType
+from .main_serializers import DiseaseSerializer, SymptomsSerializer, TriggerChecklistSerializer, NextStepsSerializer, DiseaseAlgorithmSerializer, ExamTypeSerializer
 from django.views.decorators.csrf import csrf_exempt
 from django.shortcuts import get_object_or_404
 import json
@@ -15,6 +15,13 @@ def showSymptoms(request):
         symptoms = Symptoms.objects.all()
         symptomsSerializer = SymptomsSerializer(symptoms, many = True)
         return Response(symptomsSerializer.data)
+    
+@api_view(['GET'])
+def showExamTypes(request):
+    if request.method == 'GET':
+        examType = ExamType.objects.all()
+        examTypeSerializer = ExamTypeSerializer(examType, many = True)
+        return Response(examTypeSerializer.data)
     
 @api_view(['GET'])
 def showDiseases(request):
@@ -134,7 +141,8 @@ def GetDefaultMatchingTriggerChecklists(request):
                 for symptom_id in mandatory_negative_ids - set(symptom_ids):
                     negative_next_step_recommendations.append({
                         "symptom_id": symptom_id,
-                        "trigger_name": trigger.Name  # Assuming `Name` is a field in the `TriggerChecklist` model
+                        "trigger_name": trigger.Name,
+                        "source": trigger.Source
                     })
 
         elif negative_matched_sx_count == (selection_threshold - 1):
@@ -144,14 +152,16 @@ def GetDefaultMatchingTriggerChecklists(request):
                 for symptom_id in negative_ids - set(symptom_ids):
                     negative_next_step_recommendations.append({
                         "symptom_id": symptom_id,
-                        "trigger_name": trigger.Name  # Assuming `Name` is a field in the `TriggerChecklist` model
+                        "trigger_name": trigger.Name,
+                        "source": trigger.Source
                     })
             else:
                 #if negative mandatory not satisfied, add in the rest needed
                 for symptom_id in mandatory_negative_ids - set(symptom_ids):
                     negative_next_step_recommendations.append({
                         "symptom_id": symptom_id,
-                        "trigger_name": trigger.Name  # Assuming `Name` is a field in the `TriggerChecklist` model
+                        "trigger_name": trigger.Name,
+                        "source": trigger.Source
                     })
 
          # Track symptoms per disease to ensure they are not excluded incorrectly
@@ -212,13 +222,15 @@ def GetDefaultMatchingTriggerChecklists(request):
                     for symptom_id in all_required_negative_ids - set(symptom_ids):
                         negative_next_step_recommendations.append({
                         "symptom_id": symptom_id,
-                        "trigger_name": trigger.Name  # Assuming `Name` is a field in the `TriggerChecklist` model
+                        "trigger_name": trigger.Name,
+                        "source": trigger.Source
                     })
                 else:
                     for symptom_id in all_required_mandatory_negative_ids - set(symptom_ids):
                         negative_next_step_recommendations.append({
                         "symptom_id": symptom_id,
-                        "trigger_name": trigger.Name  # Assuming `Name` is a field in the `TriggerChecklist` model
+                        "trigger_name": trigger.Name,
+                        "source": trigger.Source
                     })
 
          # Track symptoms per disease to ensure they are not excluded incorrectly
@@ -302,7 +314,8 @@ def GetDefaultMatchingTriggerChecklists(request):
                 for symptom_id in mandatory_positive_ids - set(symptom_ids):
                     positive_next_step_recommendations.append({
                         "symptom_id": symptom_id,
-                        "trigger_name": trigger.Name 
+                        "trigger_name": trigger.Name,
+                        "source": trigger.Source
                     })
 
         #if one below the threshold
@@ -312,13 +325,15 @@ def GetDefaultMatchingTriggerChecklists(request):
                 if mandatory_positive_ids.issubset(symptom_ids):
                     positive_next_step_recommendations.append({
                         "symptom_id": symptom_id,
-                        "trigger_name": trigger.Name 
+                        "trigger_name": trigger.Name,
+                        "source": trigger.Source
                     })
             else:
                 for symptom_id in  mandatory_positive_ids - set(symptom_ids):
                     positive_next_step_recommendations.append({
                         "symptom_id": symptom_id,
-                        "trigger_name": trigger.Name
+                        "trigger_name": trigger.Name,
+                        "source": trigger.Source
                     })
 
 
@@ -349,13 +364,15 @@ def GetDefaultMatchingTriggerChecklists(request):
                     for symptom_id in all_required_positive_ids - set(symptom_ids):
                         positive_next_step_recommendations.append({
                             "symptom_id": symptom_id,
-                            "trigger_name": trigger.Name
+                            "trigger_name": trigger.Name,
+                            "source": trigger.Source
                         })
                 else:
                     for symptom_id in all_required_mandatory_positive_ids - set(symptom_ids):
                         positive_next_step_recommendations.append({
                             "symptom_id": symptom_id,
-                            "trigger_name": trigger.Name
+                            "trigger_name": trigger.Name,
+                            "source": trigger.Source
                         })
         
 

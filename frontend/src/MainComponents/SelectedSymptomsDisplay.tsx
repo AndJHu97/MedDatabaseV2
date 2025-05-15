@@ -29,7 +29,12 @@ const SelectedSymptomsDisplay: React.FC<SelectedSymptomsDisplayProps> = ({
       }}
     >
       {selectedSymptoms.map((symptom) => (
-        <SelectionButton name = {symptom.Name} id = {symptom.id} onRemoveSelection={onRemoveSymptom} key = {symptom.id}></SelectionButton>
+        <SelectionButton 
+        name = {symptom.Name} 
+        isSymptomSelectable = {false}
+        id = {symptom.id} 
+        onRemoveSelection={onRemoveSymptom} 
+        key = {symptom.id}></SelectionButton>
       ))}
     </div>
   );

@@ -1,7 +1,9 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import axios from "axios";
 import SelectionButton from "./SelectionButton";
 import NextStepSelectionButton from "./NextStepSelectionButton";
+import { isDeepStrictEqual } from 'util';
+
 
 interface DiseaseAlgorithmTree{
   disease_id: number;
@@ -36,34 +38,58 @@ interface DisplayDiseaseAlgorithm{
   selected_next_steps: NextStep[];
   disease_id: number;
   disease_name: string;
+  source: string;
 }
 
 export default function RecommendedAlgorithms({disease_algorithms_trees, updateSelectedNextStepSelection}: RecommendedAlgorithmDataProp) {
   const [areRecommendedStepsVisible, setAreRecommendedStepsVisible] = useState(true);
   const [diseaseAlgorithmDisplay, setDiseaseAlgorithmDisplay] = useState<DisplayDiseaseAlgorithm[]>([]);
+  const prevDiseaseAlgorithmsInvestigatingRef = useRef<DiseaseAlgorithmTree[]>([]);
   
   //get all the disease algorithm relevant information into diseaseAlgorithmInvestigating (need to create new interface for them with DisplayDiseaseAlgorithm)
   //display the DisplayDiseaseAlgorithm
   useEffect(() => {
     const fetchDiseaseAlgorithms = async () => {
+
+      //Disease Algorithm Trees structure: 
+        //Disease being investigated: Test (Algorithm Node) and Selected next steps
+          //Test (Algorithm Node): Selection of next steps to choose from, ID
       if (!disease_algorithms_trees || !Array.isArray(disease_algorithms_trees)) {
         console.error("disease_algorithms_tree is not an array", disease_algorithms_trees);
         return;
       }
-
       
-  
+      //Make the structure to display
       try {
         const newDisplayDiseaseAlgorithms = [];
+        //Goes through each disease id
         for (let index = 0; index < disease_algorithms_trees.length; index++) {
           const disease_algorithms_tree = disease_algorithms_trees[index];
-  
+
+
+          //if the tree hasn't changed, then keep the same displays
+          if(prevDiseaseAlgorithmsInvestigatingRef.current.some(prev => 
+            JSON.stringify(prev) === JSON.stringify(disease_algorithms_tree)
+          ))
+          {
+
+            //Get the existing display and continue (don't fetch again to speed things up)
+            const already_processed_disease_id = disease_algorithms_tree.disease_id;
+            const already_processed_displays = diseaseAlgorithmDisplay.filter(display => 
+              display.disease_id === already_processed_disease_id);
+
+            newDisplayDiseaseAlgorithms.push(...already_processed_displays);
+            
+            continue;
+          }
+
+          //Goes through each test/nodes
           const diseaseAlgorithmNodes = Array.isArray(disease_algorithms_tree.DiseaseAlgorithmNodes)
             ? disease_algorithms_tree.DiseaseAlgorithmNodes
             : [];
           
 
-          //get each node data
+          //get each test/node data
           const nodesData = await Promise.all(
             diseaseAlgorithmNodes.map(async (disease_algorithm_node) => {
   
@@ -85,7 +111,7 @@ export default function RecommendedAlgorithms({disease_algorithms_trees, updateS
               );
   
               const selected_next_steps = await Promise.all(
-                disease_algorithms_tree.selected_next_steps.map(async (selectedNextStepId) => {
+                (disease_algorithms_tree.selected_next_steps ?? []).map(async (selectedNextStepId) => {
                   const selected_next_steps_response = await axios.get("http://localhost:8000/api/main/showNextSteps/", {
                     params: { id: selectedNextStepId },
                   });
@@ -103,6 +129,7 @@ export default function RecommendedAlgorithms({disease_algorithms_trees, updateS
                 selected_next_steps: selected_next_steps,
                 disease_id: disease_algorithm_response.data.Disease,
                 disease_name: disease_response.data.Name,
+                source: disease_algorithm_response.data.Source
               };
             })
           );
@@ -112,7 +139,8 @@ export default function RecommendedAlgorithms({disease_algorithms_trees, updateS
   
         console.log("New display algorithm: ", newDisplayDiseaseAlgorithms);
         setDiseaseAlgorithmDisplay(newDisplayDiseaseAlgorithms);
-  
+        //Set to compare next time to not repeat the newDisplayDiseaseAlgorithms
+        prevDiseaseAlgorithmsInvestigatingRef.current = disease_algorithms_trees;
       } catch (error) {
         console.error("Error fetching disease algorithms: ", error);
       }
@@ -121,10 +149,6 @@ export default function RecommendedAlgorithms({disease_algorithms_trees, updateS
     fetchDiseaseAlgorithms();
   }, [disease_algorithms_trees]); // Dependency array to run when disease_algorithms changes
   
-
-  useEffect(() => {
-    console.log("Algorithm Display: ", diseaseAlgorithmDisplay);
-  }, [diseaseAlgorithmDisplay])
 
   const toggleRecommendedStepsVisibility = () => {
     setAreRecommendedStepsVisible((prev) => !prev);
@@ -199,7 +223,9 @@ export default function RecommendedAlgorithms({disease_algorithms_trees, updateS
                     }}
                     className="algorithm-name"
                   >
+                    <a href={algorithm.source} target="_blank" rel="noopener noreferrer">
                     → Test: {algorithm.name}
+                    </a>
                   </h5>
   
                   {/* Next Steps Section */}

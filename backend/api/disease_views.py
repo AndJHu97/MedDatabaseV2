@@ -65,6 +65,7 @@ def GetAndPostDiseaseAlgorithmDataForForm(request):
             diseaseAlgorithm_data = {
                 'Name': request.data.get('TestName'),
                 'Notes': request.data.get('Notes', ''),
+                'Source': request.data.get('Source',''),
                 'Disease': request.data.get('DiseaseId')
             }
 
@@ -162,6 +163,7 @@ def updateNode(request):
         # Update model
         updateNodeObj.Name = request.data.get('Name')
         updateNodeObj.Notes = request.data.get('Notes')
+        updateNodeObj.Source = request.data.get('Source')
         
         # Update Triggers (Many-to-Many relationship)
         if 'Triggers' in request.data:
@@ -241,18 +243,20 @@ def deleteNode(request):
 def add_symptom(request):
     if request.method == 'POST':
         symptom_name = request.data.get('name')
+        symptom_exam_type_id = request.data.get('examTypeID')
         
         if not symptom_name:
             return JsonResponse({'error': 'Name is required'}, status=400)
         
         symptom_data = {
-            'Name': symptom_name
+            'Name': symptom_name,
+            'ExamType': symptom_exam_type_id
         }
 
         symptomAlgorithmSerialized = SymptomsSerializer(data = symptom_data)
         if symptomAlgorithmSerialized.is_valid():
             symptomAlgorithmSerialized = symptomAlgorithmSerialized.save()
-            return JsonResponse({'id': symptomAlgorithmSerialized.id, 'Name': symptomAlgorithmSerialized.Name}, status=201)
+            return JsonResponse(SymptomsSerializer(symptomAlgorithmSerialized).data, status=201)
         return JsonResponse({"Could not save symptom"}, status = 404)
 
 @api_view(['POST'])

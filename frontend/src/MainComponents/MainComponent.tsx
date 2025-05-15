@@ -6,6 +6,9 @@ import FinalResults from "./FinalResults";
 import axios from 'axios';
 import { Button } from "react-bootstrap";
 import RecommendedAlgorithms from "./RecommendedAlgorithms";
+import {SymptomsContext} from "./Context/SymptomContext";
+import { isDeepStrictEqual } from 'util';
+
 
 interface Symptom {
   id: number;
@@ -15,6 +18,7 @@ interface Symptom {
 interface NextSteps{
   symptom_id: number;
   trigger_name: string;
+  source: string;
 }
 
 interface TriggerChecklist {
@@ -75,7 +79,7 @@ export default function MainComponent() {
   //matching algorithms also trigger the disease algorithms it triggers
   const getMatchingTriggerChecklists = async () => {
     try {
-
+      //Make sure it doesn't trigger error
       const symptomIds = selectedSymptoms.map(symptom => symptom.id); 
       const matched_triggers_response = await axios.get('http://localhost:8000/api/main/getMatchedDefaultTriggers/', {
         params: { symptom_ids: symptomIds.join(',') }
@@ -162,9 +166,9 @@ export default function MainComponent() {
   
       //diseaseAlgorithmInvestigating: Go through the current investigating algorithms and update on next steps
       for(const diseaseAlgorithmTree of updatedAlgorithmTree){
+        //Check to make sure only go through disease algorithms if the current selected next steps have changed
         if(!prevDiseaseAlgorithmsInvestigatingRef.current.some(
-            (prev) => JSON.stringify(prev) === JSON.stringify(diseaseAlgorithmTree)
-          ))
+            (prev) => JSON.stringify(prev) === JSON.stringify(diseaseAlgorithmTree)))
           {
             const disease_algorithm_response = await axios.get('http://localhost:8000/api/main/getDiseaseAlgorithms/',{
               params: {
@@ -174,7 +178,9 @@ export default function MainComponent() {
               }
             );
             
+            //test is the node
             const updated_disease_algorithm_ID: number = disease_algorithm_response.data["test_id"];
+            //next steps are the links
             const updated_next_steps_ids: number[] = disease_algorithm_response.data["next_steps_ids"];
     
             //this is if i only want one algorithm tree for disease
@@ -287,12 +293,14 @@ export default function MainComponent() {
         onRemoveSymptom={handleRemoveSelectedSymptom}
       />
       <br></br>
-      <RecommendedStepsSelections name = "1a. Symptoms to Rule In" TriggerNextSteps={positiveNextSteps} TriggerChecklists={null}></RecommendedStepsSelections>
-      <br></br>
-      <RecommendedStepsSelections name = "1b. Symptoms to Rule Out" TriggerNextSteps={negativeNextSteps} TriggerChecklists={null}></RecommendedStepsSelections>
-      <br></br>
-      <RecommendedStepsSelections name = "Recommended Diseases to Investigate"  TriggerNextSteps={null} TriggerChecklists={matchedTriggers}></RecommendedStepsSelections>
-      <br></br>
+      <SymptomsContext.Provider value = {{selectedSymptoms, setSelectedSymptoms}}>
+        <RecommendedStepsSelections name = "1a. Symptoms to Rule In" TriggerNextSteps={positiveNextSteps} TriggerChecklists={null}></RecommendedStepsSelections>
+        <br></br>
+        <RecommendedStepsSelections name = "1b. Symptoms to Rule Out" TriggerNextSteps={negativeNextSteps} TriggerChecklists={null}></RecommendedStepsSelections>
+        <br></br>
+        <RecommendedStepsSelections name = "Recommended Diseases to Investigate"  TriggerNextSteps={null} TriggerChecklists={matchedTriggers}></RecommendedStepsSelections>
+        <br></br>
+      </SymptomsContext.Provider>
       <RecommendedAlgorithms disease_algorithms_trees={diseaseAlgorithmsInvestigating} updateSelectedNextStepSelection={updatedSelectedNextStep} ></RecommendedAlgorithms>
       <br></br>
       {/* Potential could remove and also make this a next steps selection. However logic could be tricky. 
