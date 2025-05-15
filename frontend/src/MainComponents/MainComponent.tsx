@@ -7,6 +7,8 @@ import axios from 'axios';
 import { Button } from "react-bootstrap";
 import RecommendedAlgorithms from "./RecommendedAlgorithms";
 import {SymptomsContext} from "./Context/SymptomContext";
+import { isDeepStrictEqual } from 'util';
+
 
 interface Symptom {
   id: number;
@@ -164,9 +166,9 @@ export default function MainComponent() {
   
       //diseaseAlgorithmInvestigating: Go through the current investigating algorithms and update on next steps
       for(const diseaseAlgorithmTree of updatedAlgorithmTree){
+        //Check to make sure only go through disease algorithms if the current selected next steps have changed
         if(!prevDiseaseAlgorithmsInvestigatingRef.current.some(
-            (prev) => JSON.stringify(prev) === JSON.stringify(diseaseAlgorithmTree)
-          ))
+            (prev) => JSON.stringify(prev) === JSON.stringify(diseaseAlgorithmTree)))
           {
             const disease_algorithm_response = await axios.get('http://localhost:8000/api/main/getDiseaseAlgorithms/',{
               params: {
@@ -176,7 +178,9 @@ export default function MainComponent() {
               }
             );
             
+            //test is the node
             const updated_disease_algorithm_ID: number = disease_algorithm_response.data["test_id"];
+            //next steps are the links
             const updated_next_steps_ids: number[] = disease_algorithm_response.data["next_steps_ids"];
     
             //this is if i only want one algorithm tree for disease
