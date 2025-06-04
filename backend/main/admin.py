@@ -5,7 +5,7 @@ from .models import Diagnosis, NextStep, Symptoms, SelectionType, TriggerCheckli
 
 admin.site.register(Diagnosis)
 admin.site.register(ExamType)
-admin.site.register(Symptoms)
+
 admin.site.register(History)
 admin.site.register(HistoryWorkup)
 admin.site.register(HistoryAssessment)
@@ -35,3 +35,8 @@ admin.site.register(DiseaseAlgorithm)
 admin.site.register(Management)
 
 admin.site.register(NextStep)
+
+@admin.register(Symptoms)
+class SymptomsAdmin(admin.ModelAdmin):
+    readonly_fields = ('updated_at',)
+

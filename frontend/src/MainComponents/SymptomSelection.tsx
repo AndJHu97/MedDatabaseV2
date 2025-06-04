@@ -16,6 +16,11 @@ interface SymptomSelectionProps {
   onSymptomSubmit: (selectedSymptom: Symptom | null) => void;
 }
 
+interface SemanticResult {
+  symptom_id: number;
+  score: number;
+}
+
 export default function SymptomSelection({ onSymptomSubmit }: SymptomSelectionProps) {
   const [symptoms, setSymptoms] = useState<Symptom[]>([]);
   const [filteredSymptoms, setFilteredSymptoms] = useState<Symptom[]>([]);
@@ -42,6 +47,8 @@ export default function SymptomSelection({ onSymptomSubmit }: SymptomSelectionPr
   }, []);
 
   // Filter symptoms when searchTerm or selectedExamType changes
+  //Add semantic symptom search here
+  /*** 
   useEffect(() => {
     const filtered = symptoms.filter(symptom =>
       symptom.Name.toLowerCase().includes(searchTerm.toLowerCase()) &&
@@ -49,6 +56,64 @@ export default function SymptomSelection({ onSymptomSubmit }: SymptomSelectionPr
     );
     setFilteredSymptoms(filtered);
   }, [searchTerm, selectedExamType, symptoms]);
+  */
+
+  useEffect(() =>{
+    //resets the search terms
+    if(searchTerm.trim() === ""){
+      setFilteredSymptoms(symptoms);
+      return;
+    }
+
+    const fetchSemanticMatches = async() => {
+      try{
+        const response = await axios.get("http://localhost:8000/api/main/semanticSymptomSearch/", {
+          params: {search_term: searchTerm},
+        });
+
+        const results: SemanticResult[] = response.data;
+
+        const matched_symptom_ids = results.map((r: SemanticResult) => r.symptom_id)
+
+        const matched_symptoms = symptoms.filter(s => matched_symptom_ids.includes(s.id));
+        console.log("Matched symptoms from semantic search ", matched_symptoms + " with search term ", searchTerm);
+        const filtered_exam_type_matched_symptoms = matched_symptoms.filter(s => selectedExamType === null || s.ExamType === selectedExamType.id)
+
+        //Get the exact word matches. This will be displayed first
+        const exact_matched_symptoms = symptoms.filter(s => 
+          s.Name.toLowerCase().includes(searchTerm.toLowerCase()) && 
+          (selectedExamType === null || s.ExamType === selectedExamType.id)
+        );
+
+        //Combine both arrys
+        var combined = [...exact_matched_symptoms, ...filtered_exam_type_matched_symptoms];
+
+        //Remove duplicates from both
+        //Map automatically removes duplicates
+        const unique_symptoms_map = new Map<number, Symptom>();
+        combined.forEach(s => {
+          //If it doesn't have this id, then add them
+          if(!unique_symptoms_map.has(s.id))
+          {
+            unique_symptoms_map.set(s.id, s);
+          }
+        });
+
+        //Only takes the values and removes the keys
+        const combined_matched_symptoms = Array.from(unique_symptoms_map.values());
+
+        setFilteredSymptoms(combined_matched_symptoms);
+
+      }catch (error){
+        console.error(error);
+        setFilteredSymptoms([]);
+
+      }
+    };
+
+    fetchSemanticMatches();
+
+  }, [searchTerm, selectedExamType, symptoms])
 
   const handleInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setSearchTerm(event.target.value);

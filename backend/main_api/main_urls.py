@@ -10,5 +10,6 @@ urlpatterns = [
     path('showDiseaseById/', main_view.showDiseaseById, name = "show_disease_by_id"),
     path('getDiseaseAlgorithms/', main_view.GetDefaultDiseaseAlgorithms, name = "get_disease_algorithms"),
     path('showDiseaseAlgorithms/', main_view.showDiseaseAlgorithm, name = "show_disease_algorithms"),
-    path('showNextSteps/', main_view.showNextSteps, name = "show_next_steps")
+    path('showNextSteps/', main_view.showNextSteps, name = "show_next_steps"),
+    path('semanticSymptomSearch/', main_view.semantic_symptom_search, name = "semantic_symptom_search")
 ]

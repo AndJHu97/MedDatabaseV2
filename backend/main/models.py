@@ -5,6 +5,7 @@ class Symptoms(models.Model):
     Number = models.CharField(max_length=255, null=True, blank = True)
     Notes = models.TextField(null=True, blank = True)
     ExamType = models.ForeignKey('ExamType', on_delete=models.CASCADE, null=True, blank = True)
+    updated_at = models.DateTimeField(auto_now=True)
 
 #Which symptoms needed to trigger workup, etc.
 class TriggerChecklist(models.Model):

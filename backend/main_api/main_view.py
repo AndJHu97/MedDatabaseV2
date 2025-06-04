@@ -9,6 +9,49 @@ from django.shortcuts import get_object_or_404
 import json
 from django.db.models import Q
 
+#FAISS
+from sentence_transformers import SentenceTransformer
+import faiss
+import pickle
+import numpy as np
+import os
+
+model = SentenceTransformer('all-MiniLM-L6-v2')
+
+def load_faiss_index():
+    index_path = "main/faiss_index/symptom_index.faiss"
+    if not os.path.exists(index_path):
+        raise FileNotFoundError(f"FAISS index file not found at {index_path}")
+    return faiss.read_index(index_path)
+
+def load_symptom_mapping():
+    mapping_path = "main/faiss_index/symptom_mapping.pkl"
+    if not os.path.exists(mapping_path):
+        raise FileNotFoundError(f"Symptom mapping file not found at {mapping_path}")
+    with open(mapping_path, "rb") as f:
+        return pickle.load(f)
+
+@api_view(['GET'])
+def semantic_symptom_search(request):
+    query = request.GET.get("search_term", "")
+    if not query:
+        return Response([])
+    
+    try:
+        faiss_index = load_faiss_index()
+        index_to_symptom = load_symptom_mapping()
+    except FileNotFoundError as e:
+        return Response({"error": str(e)}, status=500)
+    
+    query_vec = model.encode([query], convert_to_numpy=True).astype('float32')
+    
+    #Distance and index returns of top 5 matches
+    D, I = faiss_index.search(query_vec, k = 5)
+
+    results = [{"symptom_id": index_to_symptom[i], "score": float(1/(1+d))} for i,d in zip(I[0], D[0])]
+
+    return Response(results)
+
 @api_view(['GET'])
 def showSymptoms(request):
     if request.method == 'GET':
