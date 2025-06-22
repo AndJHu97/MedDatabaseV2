@@ -25,7 +25,7 @@ SECRET_KEY = 'django-insecure-b7lt#l+!m21&9#382gr5f7(xruh5lfd4+abqm)shqbri9x40!v
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['meddatabasev2.onrender.com']
 
 
 # Application definition
