@@ -15,8 +15,27 @@ import faiss
 import pickle
 import numpy as np
 import os
+from transformers import AutoTokenizer, AutoModel
+import torch
+
+
+'''
+Using Bert
+tokenizer = AutoTokenizer.from_pretrained("emilyalsentzer/Bio_ClinicalBERT")
+model = AutoModel.from_pretrained("emilyalsentzer/Bio_ClinicalBERT")
+model.eval()
+device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+model = model.to(device)
+'''
 
 model = SentenceTransformer('all-MiniLM-L6-v2')
+
+#Bert
+def mean_pooling(model_output, attention_mask):
+    token_embeddings = model_output.last_hidden_state
+    input_mask_expanded = attention_mask.unsqueeze(-1).expand(token_embeddings.size())
+    return (token_embeddings * input_mask_expanded).sum(1) / input_mask_expanded.sum(1)
+
 
 def load_faiss_index():
     index_path = "main/faiss_index/symptom_index.faiss"
@@ -44,7 +63,17 @@ def semantic_symptom_search(request):
         return Response({"error": str(e)}, status=500)
     
     query_vec = model.encode([query], convert_to_numpy=True).astype('float32')
-    
+
+    #Bert
+    '''
+    inputs = tokenizer(query, return_tensors="pt", padding=True, truncation=True).to(device)
+    with torch.no_grad():
+        model_output = model(**inputs)
+
+    query_embedding = mean_pooling(model_output, inputs['attention_mask'])
+    query_vec = query_embedding.cpu().numpy().astype('float32')
+    '''
+
     #Distance and index returns of top 5 matches
     D, I = faiss_index.search(query_vec, k = 5)
 
