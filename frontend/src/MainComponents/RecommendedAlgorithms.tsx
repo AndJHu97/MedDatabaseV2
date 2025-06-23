@@ -1,8 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import axios from "axios";
-import SelectionButton from "./SelectionButton";
 import NextStepSelectionButton from "./NextStepSelectionButton";
-import { isDeepStrictEqual } from 'util';
+const API_URL = process.env.REACT_APP_API_URL;
 
 
 interface DiseaseAlgorithmTree{
