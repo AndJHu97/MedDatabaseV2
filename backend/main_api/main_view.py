@@ -15,7 +15,7 @@ import faiss
 import pickle
 import numpy as np
 import os
-from transformers import AutoTokenizer, AutoModel
+#from transformers import AutoTokenizer, AutoModel
 import torch
 
 
