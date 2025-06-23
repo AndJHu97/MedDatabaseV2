@@ -22,7 +22,7 @@ def build_faiss_index():
             last_index_time = datetime.fromisoformat(f.read())
         if last_modified <= last_index_time:
             print("FAISS Index is up to date.")
-            #return
+            return
     except FileNotFoundError:
         pass
 
