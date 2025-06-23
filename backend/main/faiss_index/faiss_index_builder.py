@@ -11,7 +11,10 @@ INDEX_PATH = "main/faiss_index/symptom_index.faiss"
 MAPPING_PATH = "main/faiss_index/symptom_mapping.pkl"
 
 def build_faiss_index():
-
+    if os.getenv("DISABLE_FAISS_BUILD") == "1":
+        print("Skipping FAISS index build because of environment setting")
+        return
+    
     #Will check if it should update FAISS based on the last update
     last_modified = Symptoms.objects.latest('updated_at').updated_at
     try:
