@@ -10,13 +10,19 @@ import json
 from django.db.models import Q
 
 #FAISS
-from sentence_transformers import SentenceTransformer
+#from sentence_transformers import SentenceTransformer
 import faiss
 import pickle
 import numpy as np
 import os
 #from transformers import AutoTokenizer, AutoModel
-import torch
+import requests
+from huggingface_hub import InferenceClient
+
+#HF_API_URL = "https://api-inference.huggingface.co/models/sentence-transformers/all-MiniLM-L6-v2"
+
+
+client = InferenceClient(api_key=os.environ["HF_TOKEN"])
 
 
 '''
@@ -29,6 +35,12 @@ model = model.to(device)
 '''
 
 #model = SentenceTransformer('all-MiniLM-L6-v2')
+
+#ONLY FOR HF API END POINT
+def get_embedding_from_hf(query: str):
+    result = client.feature_extraction(query, model="sentence-transformers/all-MiniLM-L6-v2")
+    return np.array(result, dtype='float32')
+
 
 #Bert
 def mean_pooling(model_output, attention_mask):
@@ -52,6 +64,12 @@ def load_symptom_mapping():
 
 @api_view(['GET'])
 def semantic_symptom_search(request):
+
+    query = "glucose"
+    embedding = get_embedding_from_hf(query)
+    print("Shape:", embedding.shape)
+
+
     query = request.GET.get("search_term", "")
     if not query:
         return Response([])
@@ -62,9 +80,19 @@ def semantic_symptom_search(request):
     except FileNotFoundError as e:
         return Response({"error": str(e)}, status=500)
     
+    #Without using Hugging face API (old)
+    '''
     model = SentenceTransformer('all-MiniLM-L6-v2')
     query_vec = model.encode([query], convert_to_numpy=True).astype('float32')
-
+    '''
+    
+    try:
+        # Call Hugging Face API to get query embedding
+        query_vec = get_embedding_from_hf(query).reshape(1, -1)
+    except Exception as e:
+        return Response({"error": "Failed to get embedding from Hugging Face", "details": str(e)}, status=500)
+    
+        
     #Bert
     '''
     inputs = tokenizer(query, return_tensors="pt", padding=True, truncation=True).to(device)
