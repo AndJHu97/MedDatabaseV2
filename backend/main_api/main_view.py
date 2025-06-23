@@ -28,7 +28,7 @@ device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 model = model.to(device)
 '''
 
-model = SentenceTransformer('all-MiniLM-L6-v2')
+#model = SentenceTransformer('all-MiniLM-L6-v2')
 
 #Bert
 def mean_pooling(model_output, attention_mask):
@@ -62,6 +62,7 @@ def semantic_symptom_search(request):
     except FileNotFoundError as e:
         return Response({"error": str(e)}, status=500)
     
+    model = SentenceTransformer('all-MiniLM-L6-v2')
     query_vec = model.encode([query], convert_to_numpy=True).astype('float32')
 
     #Bert
