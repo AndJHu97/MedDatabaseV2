@@ -59,7 +59,7 @@ ROOT_URLCONF = 'MedDataDjango.urls'
 
 CORS_ALLOWED_ORIGINS = [
     'http://localhost:3000',
-    "https://your-netlify-site.netlify.app",
+    "https://nextstepmd.netlify.app",
 ]
 
 
