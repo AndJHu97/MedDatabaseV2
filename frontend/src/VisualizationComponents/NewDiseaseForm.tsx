@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import axios from 'axios';
 import './form.css';
+const API_URL = process.env.REACT_APP_API_URL;
 
 interface NewDiseaseFormProps {
   onNewDiseaseAdded: () => void; // Define the prop type
@@ -23,7 +24,7 @@ export default function NewDiseaseForm({ onNewDiseaseAdded} : NewDiseaseFormProp
 
   const handleAddDisease = async () => {
     try {
-        const response = await axios.post('http://localhost:8000/api/add_disease/', diseaseFormData);
+        const response = await axios.post(`${API_URL}/api/add_disease/`, diseaseFormData);
         setDiseaseFormData(initialFormState);
         onNewDiseaseAdded();
     } catch (error) {

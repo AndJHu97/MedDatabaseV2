@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import './form.css';
+const API_URL = process.env.REACT_APP_API_URL;
 //import { Form, FormControl, FormGroup, FormLabel, Button } from 'react-bootstrap';
 
 interface NodeFormProps{
@@ -55,7 +56,7 @@ function NodeForm({ selectedNodeId,  selectedLinkInfo, updateForm, onUpdateTree}
    useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await axios.get("http://localhost:8000/api/algorithmsForm/");
+        const response = await axios.get(`${API_URL}/api/algorithmsForm/`);
         setSymptoms(response.data.symptoms);
         setExamTypes(response.data.examTypes);
         setTrigger(response.data.trigger);
@@ -85,7 +86,7 @@ function NodeForm({ selectedNodeId,  selectedLinkInfo, updateForm, onUpdateTree}
         //get the data and update form
         try {
           // Waits until gets these nodes to run the rest
-          const response = await axios.get("http://localhost:8000/api/algorithms/");
+          const response = await axios.get(`${API_URL}/api/algorithms/`);
           const data = response.data;
           //Use Node's diseaseid to populate form with the current form info
           const diseaseNodeAlgorithm = data.find((node:any) => node.id === selectedNodeId[1]);
@@ -190,7 +191,7 @@ function NodeForm({ selectedNodeId,  selectedLinkInfo, updateForm, onUpdateTree}
         // Send data rest to post with axios
         const formDataJSON = JSON.stringify(formData);
         console.log(formDataJSON);
-        const response = await axios.post("http://localhost:8000/api/algorithmsForm/", formData);
+        const response = await axios.post(`${API_URL}/api/algorithmsForm/`, formData);
         onUpdateTree();
         console.log("Form submitted successfully: ", response.data);
       } catch (error) {
@@ -210,7 +211,7 @@ function NodeForm({ selectedNodeId,  selectedLinkInfo, updateForm, onUpdateTree}
     try{
       const updatedLinkInfoJSON = JSON.stringify(updatedLinkInfo);
       console.log("updated Node Info: " + updatedLinkInfoJSON);
-      const response = await axios.post("http://localhost:8000/api/updateLink/", updatedLinkInfo);
+      const response = await axios.post(`${API_URL}/api/updateLink/`, updatedLinkInfo);
       onUpdateTree();
       console.log("Form submitted successfully: ", response.data);
     } catch(error){
@@ -227,7 +228,7 @@ function NodeForm({ selectedNodeId,  selectedLinkInfo, updateForm, onUpdateTree}
     try{
       const updatedNodeInfoJSON = JSON.stringify(updatedNodeInfo);
       console.log("updated Node Info: " + updatedNodeInfoJSON);
-      const response = await axios.post("http://localhost:8000/api/updateNode/", updatedNodeInfo);
+      const response = await axios.post(`${API_URL}/api/updateNode/`, updatedNodeInfo);
       onUpdateTree();
       console.log("Form submitted successfully: ", response.data);
     } catch(error){
@@ -241,7 +242,7 @@ function NodeForm({ selectedNodeId,  selectedLinkInfo, updateForm, onUpdateTree}
       }
 
       try{
-        const response = await axios.delete("http://localhost:8000/api/deleteNode/", {data: deletedNodeId});
+        const response = await axios.delete(`${API_URL}/api/deleteNode/`, {data: deletedNodeId});
         onUpdateTree();
         console.log("Form submitted successfully: ", response.data);
       }catch(error){
@@ -261,7 +262,7 @@ function NodeForm({ selectedNodeId,  selectedLinkInfo, updateForm, onUpdateTree}
   
   const handleAddSymptom = async () => {
     try {
-      const response = await axios.post('http://localhost:8000/api/add_symptom/', { name: newSymptom, examTypeID: newSymptomExamType });
+      const response = await axios.post(`${API_URL}/api/add_symptom/`, { name: newSymptom, examTypeID: newSymptomExamType });
       setSymptoms([...symptoms, response.data]);
       setNewSymptom('');
       setShowNewSymptomForm(false);

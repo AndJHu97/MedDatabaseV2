@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import SelectionButton from "./SelectionButton";
+const API_URL = process.env.REACT_APP_API_URL;
 
 interface NextSteps {
   symptom_id: number;
@@ -49,7 +50,7 @@ export default function RecommendedStepsSelections({ name, TriggerNextSteps, Tri
   useEffect(() => {
     const fetchSymptoms = async () => {
       try {
-        const response = await axios.get<Symptom[]>("http://localhost:8000/api/main/showSymptoms/");
+        const response = await axios.get<Symptom[]>(`${API_URL}/api/main/showSymptoms/`);
         const symptomMap: Record<number, string> = {};
         response.data.forEach((symptom) => {
           symptomMap[symptom.id] = symptom.Name;
@@ -66,7 +67,7 @@ export default function RecommendedStepsSelections({ name, TriggerNextSteps, Tri
   useEffect(() => {
     const fetchDiseases = async () => {
       try {
-        const response = await axios.get<Disease[]>("http://localhost:8000/api/main/showDiseases/");
+        const response = await axios.get<Disease[]>(`${API_URL}/api/main/showDiseases/`);
         const diseaseMap: Record<number, string> = {};
         response.data.forEach((disease) => {
           diseaseMap[disease.id] = disease.Name;

@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import DiseaseDropdownSelection from "../Disease-Dropdown-Selection";
 import axios from 'axios';
+const API_URL = process.env.REACT_APP_API_URL;
 
 interface PreselectedInputs {
   id: number;
@@ -74,11 +75,11 @@ export default function TriggerMain() {
 
   // Fetch Symptoms and Selection Types from the API
   useEffect(() => {
-    axios.get('http://localhost:8000/api/trigger/showSymptoms/')
+    axios.get(`${API_URL}/api/trigger/showSymptoms/`)
       .then(response => setSymptoms(response.data))
       .catch(error => console.error(error));
 
-    axios.get('http://localhost:8000/api/trigger/showSelection/')
+    axios.get(`${API_URL}api/trigger/showSelection/`)
       .then(response => setSelectionTypes(response.data))
       .catch(error => console.error(error));
   }, []);
@@ -232,7 +233,7 @@ export default function TriggerMain() {
   const [showNewSymptomForm, setShowNewSymptomForm] = useState(false);
   const handleAddSymptom = async () => {
     try {
-      const response = await axios.post('http://localhost:8000/api/add_symptom/', { name: newSymptom });
+      const response = await axios.post(`${API_URL}/api/add_symptom/`, { name: newSymptom });
       setAddSymptoms([...symptoms, response.data]);
       setNewSymptom('');
       setShowNewSymptomForm(false);
@@ -244,7 +245,7 @@ export default function TriggerMain() {
   // Handle form submission
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    axios.post('http://localhost:8000/api/trigger/submitTriggerForm/', formData)
+    axios.post(`${API_URL}/api/trigger/submitTriggerForm/`, formData)
       .then(response => {
         console.log("Form submitted successfully:", response.data);
         setFormData({

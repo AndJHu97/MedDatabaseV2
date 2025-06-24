@@ -4,11 +4,9 @@ import SelectedSymptomsDisplay from "./SelectedSymptomsDisplay";
 import RecommendedStepsSelections from "./RecommendedStepsSelections";
 import FinalResults from "./FinalResults";
 import axios from 'axios';
-import { Button } from "react-bootstrap";
 import RecommendedAlgorithms from "./RecommendedAlgorithms";
 import {SymptomsContext} from "./Context/SymptomContext";
-import { isDeepStrictEqual } from 'util';
-
+const API_URL = process.env.REACT_APP_API_URL;
 
 interface Symptom {
   id: number;
@@ -81,7 +79,7 @@ export default function MainComponent() {
     try {
       //Make sure it doesn't trigger error
       const symptomIds = selectedSymptoms.map(symptom => symptom.id); 
-      const matched_triggers_response = await axios.get('http://localhost:8000/api/main/getMatchedDefaultTriggers/', {
+      const matched_triggers_response = await axios.get(`${API_URL}/api/main/getMatchedDefaultTriggers/`, {
         params: { symptom_ids: symptomIds.join(',') }
       });
       //console.log("Get matched default triggers: ", response.data);
@@ -106,7 +104,7 @@ export default function MainComponent() {
       const diseaseAlgorithms: DiseaseAlgorithmTree[] = await Promise.all(
         matched_triggers_response.data["diseases_ids_triggered"].map(async (disease_id: number) => {
           // Fetch the disease details
-          const disease_response = await axios.get("http://localhost:8000/api/main/showDiseaseById/", {
+          const disease_response = await axios.get(`${API_URL}/api/main/showDiseaseById/`, {
             params: { id: disease_id },
           });
       
@@ -170,7 +168,7 @@ export default function MainComponent() {
         if(!prevDiseaseAlgorithmsInvestigatingRef.current.some(
             (prev) => JSON.stringify(prev) === JSON.stringify(diseaseAlgorithmTree)))
           {
-            const disease_algorithm_response = await axios.get('http://localhost:8000/api/main/getDiseaseAlgorithms/',{
+            const disease_algorithm_response = await axios.get(`${API_URL}/api/main/getDiseaseAlgorithms/`,{
               params: {
                 disease_id: diseaseAlgorithmTree.disease_id,
                 next_steps_ids: Array.isArray(diseaseAlgorithmTree.selected_next_steps) ? diseaseAlgorithmTree.selected_next_steps.join(',') : ''

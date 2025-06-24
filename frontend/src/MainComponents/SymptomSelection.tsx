@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
+const API_URL = process.env.REACT_APP_API_URL;
 
 interface Symptom {
   id: number;
@@ -32,14 +33,14 @@ export default function SymptomSelection({ onSymptomSubmit }: SymptomSelectionPr
 
   // Fetch Symptoms and ExamTypes
   useEffect(() => {
-    axios.get("http://localhost:8000/api/main/showSymptoms/")
+    axios.get(`${API_URL}/api/main/showSymptoms/`)
       .then((response) => {
         setSymptoms(response.data);
         setFilteredSymptoms(response.data);
       })
       .catch((error) => console.error(error));
 
-    axios.get("http://localhost:8000/api/main/showExamTypes/")
+    axios.get(`${API_URL}/api/main/showExamTypes/`)
       .then((response) => {
         setExamTypes(response.data);
       })
@@ -67,7 +68,7 @@ export default function SymptomSelection({ onSymptomSubmit }: SymptomSelectionPr
 
     const fetchSemanticMatches = async() => {
       try{
-        const response = await axios.get("http://localhost:8000/api/main/semanticSymptomSearch/", {
+        const response = await axios.get(`${API_URL}/api/main/semanticSymptomSearch/`, {
           params: {search_term: searchTerm},
         });
 

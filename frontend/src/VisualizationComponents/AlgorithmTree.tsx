@@ -4,6 +4,7 @@ import axios from "axios";
 import "./custom-tree.css";
 import "./tree-container.css";
 import { useFetchTree } from "../Utilities/useFetchTree";
+const API_URL = process.env.REACT_APP_API_URL;
 
 interface Disease {
   id: number;
@@ -105,7 +106,7 @@ export default function AlgorithmTree({
               DiseaseId: diseaseNode.id
             }
             console.log(firstNode);
-            const response = await axios.post("http://localhost:8000/api/addFirstNode/", firstNode)
+            const response = await axios.post(`${API_URL}/api/addFirstNode/`, firstNode)
           } catch (error) {
             console.error('Error adding first node:', error);
           }

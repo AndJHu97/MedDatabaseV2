@@ -92,17 +92,17 @@ export default function RecommendedAlgorithms({disease_algorithms_trees, updateS
           const nodesData = await Promise.all(
             diseaseAlgorithmNodes.map(async (disease_algorithm_node) => {
   
-              const disease_algorithm_response = await axios.get("http://localhost:8000/api/main/showDiseaseAlgorithms/", {
+              const disease_algorithm_response = await axios.get(`${API_URL}/api/main/showDiseaseAlgorithms/`, {
                 params: { id: disease_algorithm_node.disease_algorithm_id },
               });
   
-              const disease_response = await axios.get("http://localhost:8000/api/main/showDiseaseById/", {
+              const disease_response = await axios.get(`${API_URL}/api/main/showDiseaseById/`, {
                 params: { id: disease_algorithm_response.data.Disease },
               });
   
               const next_steps = await Promise.all(
                 disease_algorithm_node.next_steps.map(async (nextStepId) => {
-                  const next_step_response = await axios.get("http://localhost:8000/api/main/showNextSteps/", {
+                  const next_step_response = await axios.get(`${API_URL}/api/main/showNextSteps/`, {
                     params: { id: nextStepId },
                   });
                   return next_step_response.data;
@@ -111,7 +111,7 @@ export default function RecommendedAlgorithms({disease_algorithms_trees, updateS
   
               const selected_next_steps = await Promise.all(
                 (disease_algorithms_tree.selected_next_steps ?? []).map(async (selectedNextStepId) => {
-                  const selected_next_steps_response = await axios.get("http://localhost:8000/api/main/showNextSteps/", {
+                  const selected_next_steps_response = await axios.get(`${API_URL}/api/main/showNextSteps/`, {
                     params: { id: selectedNextStepId },
                   });
                   return selected_next_steps_response.data;
