@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import axios from "axios";
 const API_URL = process.env.REACT_APP_API_URL;
 
@@ -30,6 +30,28 @@ export default function SymptomSelection({ onSymptomSubmit }: SymptomSelectionPr
   const [selectedSymptom, setSelectedSymptom] = useState<Symptom | null>(null);
   const [examTypes, setExamTypes] = useState<ExamType[]>([]);
   const [selectedExamType, setSelectedExamType] = useState<ExamType | null>(null);
+  //Whenever click on this, it won't make the dropdown go away
+  const inputWrapperRef = useRef<HTMLDivElement>(null);
+
+  //When clicking outside of the search bar, will get rid of drop down
+  useEffect(() =>{
+    const handleClickOutside = (event: MouseEvent) =>{
+      if(
+        inputWrapperRef.current && 
+        //When the cursor isn't in the search bar
+        !inputWrapperRef.current.contains(event.target as Node)
+      ){
+          setShowDropdown(false);
+        }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+
+    //When unmounts, eliminates this
+    return () =>{
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+
+  }, [])
 
   // Fetch Symptoms and ExamTypes
   useEffect(() => {
@@ -66,7 +88,26 @@ export default function SymptomSelection({ onSymptomSubmit }: SymptomSelectionPr
       return;
     }
 
-    const fetchSemanticMatches = async() => {
+    const fetchExactSearch = () => {
+        //Get the exact word matches. This will be displayed first
+        const exact_matched_symptoms = symptoms.filter(s => 
+            s.Name.toLowerCase().includes(searchTerm.toLowerCase()) && 
+            (selectedExamType === null || s.ExamType === selectedExamType.id)
+          );
+
+        setFilteredSymptoms(exact_matched_symptoms);
+    }
+
+    fetchExactSearch();
+
+  }, [searchTerm, selectedExamType, symptoms])
+
+  const handleInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setSearchTerm(event.target.value);
+    setShowDropdown(true);
+  };
+
+  const fetchSemanticMatches = async() => {
       try{
         const response = await axios.get(`${API_URL}/api/main/semanticSymptomSearch/`, {
           params: {search_term: searchTerm},
@@ -112,15 +153,6 @@ export default function SymptomSelection({ onSymptomSubmit }: SymptomSelectionPr
       }
     };
 
-    fetchSemanticMatches();
-
-  }, [searchTerm, selectedExamType, symptoms])
-
-  const handleInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    setSearchTerm(event.target.value);
-    setShowDropdown(true);
-  };
-
   const handleSymptomSelect = (symptom: Symptom) => {
     setSelectedSymptom(symptom);
     setSearchTerm(symptom.Name);
@@ -142,11 +174,11 @@ export default function SymptomSelection({ onSymptomSubmit }: SymptomSelectionPr
   };
 
   return (
-    <div style={{ width: "100%", maxWidth: "600px", margin: "0 auto" }}>
+    <div style={{ width: "100%", maxWidth: "800px", margin: "0 auto" }}>
       <h4>Select a Symptom</h4>
 
       {/* Flex container for ExamType dropdown and search input */}
-      <div style={{ display: "flex", gap: "8px" }}>
+      <div ref={inputWrapperRef} style={{ display: "flex", gap: "8px", alignItems: "flex-end" }}>
         {/* ExamType Dropdown */}
         <select
           value={selectedExamType ? selectedExamType.id : ""}
@@ -155,7 +187,7 @@ export default function SymptomSelection({ onSymptomSubmit }: SymptomSelectionPr
             padding: "8px",
             borderRadius: "4px",
             border: "1px solid #ccc",
-            minWidth: "120px",
+            minWidth: "90px",
           }}
         >
           <option value="">All Exams</option>
@@ -220,7 +252,26 @@ export default function SymptomSelection({ onSymptomSubmit }: SymptomSelectionPr
               )}
             </ul>
           )}
+
+          
         </div>
+
+        <button
+            onClick={fetchSemanticMatches}
+            style={{
+              marginTop: "10px",
+              padding: "8px 16px",
+              backgroundColor: "#007BFF",
+              color: "white",
+              border: "none",
+              borderRadius: "4px",
+              cursor: "pointer",
+              display: "block",
+              
+            }}
+          >
+            Advanced Search
+          </button>
       </div>
 
       {/* Submit Button */}
