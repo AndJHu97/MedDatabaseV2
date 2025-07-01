@@ -5,6 +5,7 @@ import RecommendedStepsSelections from "./RecommendedStepsSelections";
 import FinalResults from "./FinalResults";
 import axios from 'axios';
 import RecommendedAlgorithms from "./RecommendedAlgorithms";
+import RecommendedManagement from "./RecommendedManagement";
 import {SymptomsContext} from "./Context/SymptomContext";
 const API_URL = process.env.REACT_APP_API_URL;
 
@@ -292,18 +293,20 @@ export default function MainComponent() {
       />
       <br></br>
       <SymptomsContext.Provider value = {{selectedSymptoms, setSelectedSymptoms}}>
-        <RecommendedStepsSelections name = "1a. Symptoms to Rule In" TriggerNextSteps={positiveNextSteps} TriggerChecklists={null}></RecommendedStepsSelections>
+        <RecommendedStepsSelections name = "1a. Suspicion Criteria" description="Symptoms that raise suspicion for disease" TriggerNextSteps={positiveNextSteps} TriggerChecklists={null}></RecommendedStepsSelections>
         <br></br>
-        <RecommendedStepsSelections name = "1b. Symptoms to Rule Out" TriggerNextSteps={negativeNextSteps} TriggerChecklists={null}></RecommendedStepsSelections>
+        <RecommendedStepsSelections name = "1b. Exclusion Criteria" description="Symptoms that reduce likelihood of disease" TriggerNextSteps={negativeNextSteps} TriggerChecklists={null}></RecommendedStepsSelections>
         <br></br>
-        <RecommendedStepsSelections name = "Recommended Diseases to Investigate"  TriggerNextSteps={null} TriggerChecklists={matchedTriggers}></RecommendedStepsSelections>
+        <RecommendedStepsSelections name = "Diseases to Conduct Further Diagnostics" description="Diseases that reach high suspicion and require further testing" TriggerNextSteps={null} TriggerChecklists={matchedTriggers}></RecommendedStepsSelections>
         <br></br>
       </SymptomsContext.Provider>
       <RecommendedAlgorithms disease_algorithms_trees={diseaseAlgorithmsInvestigating} updateSelectedNextStepSelection={updatedSelectedNextStep} ></RecommendedAlgorithms>
       <br></br>
       {/* Potential could remove and also make this a next steps selection. However logic could be tricky. 
       Can implement the display of buttons with the next steps though */}
-      <FinalResults Result = "Results" onRemoveResults={handleRemoveFinalResults}></FinalResults>
+      <FinalResults Result = "Final Results" onRemoveResults={handleRemoveFinalResults}></FinalResults>
+      <br></br>
+      <RecommendedManagement disease_ids={[1,6]}></RecommendedManagement>
     </div>
   );
 }

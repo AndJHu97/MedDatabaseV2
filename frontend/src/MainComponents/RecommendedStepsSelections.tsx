@@ -36,12 +36,13 @@ interface Disease {
 
 interface RecommendedStepsDataProp {
   name: string;
+  description: string;
   TriggerNextSteps: NextSteps[] | null;
   TriggerChecklists: TriggerChecklist[] | null;
 }
 
 //if either one is null, it will only focus on the other one
-export default function RecommendedStepsSelections({ name, TriggerNextSteps, TriggerChecklists }: RecommendedStepsDataProp) {
+export default function RecommendedStepsSelections({ name, description, TriggerNextSteps, TriggerChecklists }: RecommendedStepsDataProp) {
   const [areRecommendedStepsVisible, setAreRecommendedStepsVisible] = useState(true);
   const [symptomNames, setSymptomNames] = useState<Record<number, string>>({});
   const [diseaseNames, setDiseaseNames] = useState<Record<number, string>>({});
@@ -104,6 +105,11 @@ export default function RecommendedStepsSelections({ name, TriggerNextSteps, Tri
         {name + " "}
         <span style={{ marginLeft: "8px" }}>{areRecommendedStepsVisible ? "▲" : "▼"}</span>
       </h4>
+      <p
+        style = {{color: "#808080"}}
+      >
+        {description}
+      </p>
 
       {areRecommendedStepsVisible && (
         <div className="recommended-steps-choices">
@@ -127,7 +133,7 @@ export default function RecommendedStepsSelections({ name, TriggerNextSteps, Tri
                       key={step.symptom_id}
                       id={step.symptom_id}
                       isSymptomSelectable = {true}
-                      name={symptomNames[step.symptom_id] || `Symptom ${step.symptom_id}`}
+                      name={symptomNames[step.symptom_id] || `Symptom id ${step.symptom_id}`}
                       onRemoveSelection={() => {}}
                     />
                   ))}

@@ -187,11 +187,16 @@ export default function RecommendedAlgorithms({disease_algorithms_trees, updateS
         onClick={toggleRecommendedStepsVisibility}
         style={{ display: "flex", alignItems: "center", userSelect: "none" }}
       >
-        2. Suspected Disease Diagnostic Workflow
+        2. Diagnostic Tests
         <span style={{ marginLeft: "8px" }}>
           {areRecommendedStepsVisible ? "▲" : "▼"}
         </span>
       </h4>
+      <p
+        style = {{color: "#808080"}}
+      >
+        Tests to confirm diagnosis when suspicion is high
+      </p>
   
       {areRecommendedStepsVisible && (
         <div className="recommended-steps-choices">

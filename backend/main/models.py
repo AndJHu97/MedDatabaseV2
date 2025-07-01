@@ -177,6 +177,7 @@ class Disease(models.Model):
     AlgorithmTrigger = models.ManyToManyField(TriggerChecklist, related_name = "disease_alg_trigger", blank=True)
     RootAlgorithmNodes = models.ManyToManyField(DiseaseAlgorithm, related_name='root_diseases_algorithms', blank=True)
     Management = models.ForeignKey('Management', on_delete=models.CASCADE, null=True, blank=True)
+    ManagementPlaceholder = models.TextField(blank=True, null = True)
     
 
 class TestManagement(models.Model):
